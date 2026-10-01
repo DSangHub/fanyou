@@ -172,7 +172,16 @@
             
             <section id="futbol" aria-labelledby="futbol-heading" class="rounded-2xl border border-emerald-700 bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 p-5 sm:p-8 space-y-4">
                 <p class="text-sm font-semibold uppercase tracking-widest text-emerald-300">South America &amp; Europe</p>
-                <h1 id="futbol-heading" class="text-4xl sm:text-5xl font-extrabold">⚽ Futbol</h1>
+                <h1 id="futbol-heading" class="text-4xl sm:text-5xl font-extrabold"><button type="button" id="futbol-language-toggle" aria-expanded="false" aria-controls="futbol-languages" class="rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-300">⚽ Futbol <span class="text-base font-normal">🌐</span></button></h1>
+                <div id="futbol-languages" hidden class="rounded-lg border border-emerald-700 p-3">
+                    <label for="futbol-language" class="block text-sm mb-2">Language / Idioma / Língua</label>
+                    <select id="futbol-language" class="rounded-lg bg-slate-950 border border-slate-700 p-2 w-full sm:w-auto">
+                        <option value="en">English</option>
+                        <optgroup label="South America"><option value="es">Español</option><option value="pt">Português</option></optgroup>
+                        <optgroup label="Europe"><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option></optgroup>
+                    </select>
+                    <p class="mt-2 text-xs text-slate-400">Language applies to the Futbol section. Team names and member content remain in their original language.</p>
+                </div>
                 <p class="text-lg text-slate-200">Fan, Player &amp; Manager Profiles</p>
                 <p class="text-slate-300">Find School, College, and Professional teams. Add your team, interact, and earn points and rewards.</p>
                 <p class="text-sm text-emerald-200">Points may be redeemed for tickets. Conditions apply.</p>
@@ -1085,5 +1094,6 @@
             });
         }
     </script>
+<script src="futbol-languages.js"></script>
 </body>
 </html>
