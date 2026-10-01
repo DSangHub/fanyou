@@ -201,6 +201,50 @@
                 </details>
             </section>
 
+            <section id="fan-community" aria-labelledby="suggestion-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
+                <div><h2 id="suggestion-heading" class="text-2xl font-bold">Fan Suggestion Box</h2><p class="text-slate-400 mt-2 text-sm">Share constructive ideas with Players and Coaches. Build a better team together.</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div class="rounded-xl bg-slate-950 border border-slate-700 p-4"><h3 class="font-bold">Free Fans</h3><p class="text-2xl font-bold mt-2">$0</p><p class="text-sm text-slate-400 mt-2">10 suggestions per calendar month. Resets on the first day of each month (UTC).</p></div>
+                    <div class="rounded-xl bg-indigo-950 border border-indigo-600 p-4"><h3 class="font-bold">Unlimited Fans</h3><p class="text-2xl font-bold mt-2">$10/month <span class="text-sm font-normal">or $99/year</span></p><p class="text-sm text-slate-300 mt-2">Unlimited suggestions. The same strict content rules apply.</p><div class="flex flex-wrap gap-2 mt-3"><button data-buy="fan:month" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Monthly</button><button data-buy="fan:year" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Yearly</button></div></div>
+                    <div class="rounded-xl bg-slate-950 border border-purple-700 p-4"><h3 class="font-bold">Player &amp; Coach Premier</h3><p class="text-2xl font-bold mt-2">$10/month <span class="text-sm font-normal">or $99/year</span></p><p class="text-sm text-slate-300 mt-2">Verified profile, unlimited fan suggestions, and OpenAI screening for incoming suggestions and your replies. Identity verification is required.</p><div class="flex flex-wrap gap-2 mt-3"><button data-buy="premier:month" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Monthly</button><button data-buy="premier:year" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Yearly</button></div></div>
+                </div>
+                <p class="text-xs text-slate-400">Plans renew automatically until cancelled. Manage cancellation in Billing. Basic profiles use moderator review; Premier profiles add OpenAI screening. No profanity, threats, harassment, hate, sexual content, spam, impersonation, or private contact details. Screening can miss context; human review is available. Unlimited suggestions remain subject to anti-spam limits.</p>
+                <p id="community-status" role="status" aria-live="polite" class="text-sm text-indigo-300"></p>
+                <div id="community-auth" class="rounded-xl bg-slate-950 border border-slate-700 p-4">
+                    <h3 class="font-bold mb-3">Create an account or sign in</h3>
+                    <form id="community-auth-form" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <label class="text-sm">Email<input name="email" type="email" required autocomplete="email" maxlength="254" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                        <label class="text-sm">Password<input name="password" type="password" required minlength="8" maxlength="128" autocomplete="current-password" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                        <div class="flex gap-2 items-end"><button type="submit" name="action" value="login" class="rounded-lg bg-indigo-600 px-3 py-2">Sign in</button><button type="submit" name="action" value="signup" class="rounded-lg bg-slate-700 px-3 py-2">Sign up</button></div>
+                    </form>
+                </div>
+                <div id="community-account" class="hidden space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2"><p id="community-usage" class="font-semibold text-indigo-300"></p><div class="flex gap-2"><button id="community-billing" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Billing</button><button id="community-logout" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Sign out</button></div></div>
+                    <details id="community-profile-details" class="rounded-xl bg-slate-950 border border-slate-700 p-4" open>
+                        <summary class="font-bold cursor-pointer">Your Fan, Player, or Coach profile</summary>
+                        <p id="community-profile-status" class="text-sm text-slate-400 mt-2"></p>
+                        <form id="community-profile-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                            <label class="text-sm">Display name<input name="display_name" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                            <label class="text-sm">Profile type<select name="role" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="fan">Fan</option><option value="player">Player</option><option value="coach">Coach</option></select></label>
+                            <label data-profile-field class="text-sm hidden">School / team<input name="school" maxlength="100" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                            <label data-profile-field class="text-sm hidden">Sport<input name="sport" maxlength="60" placeholder="Any sport" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                            <label data-profile-field class="text-sm hidden sm:col-span-2">About you<textarea name="bio" maxlength="600" rows="3" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
+                            <p data-profile-field class="text-xs text-slate-400 hidden sm:col-span-2">Only create a profile for yourself. Player and Coach profiles require independent verification. Profile edits require verification again. Do not include private information about yourself or minors.</p>
+                            <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 sm:col-span-2">Save profile</button>
+                        </form>
+                    </details>
+                    <form id="community-suggestion-form" class="rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-3">
+                        <h3 class="font-bold">Send a fan suggestion</h3>
+                        <label class="block text-sm">Player or Coach<select name="recipient_id" id="community-recipient" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified profile</option></select></label>
+                        <label class="block text-sm">Your suggestion<textarea name="body" required minlength="5" maxlength="1500" rows="4" placeholder="Keep it constructive and respectful." class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
+                        <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2">Submit for moderation</button>
+                    </form>
+                    <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
+                </div>
+                <div><h3 class="font-bold">Verified Players &amp; Coaches</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
+                <details id="community-admin" class="hidden border-t border-slate-700 pt-4"><summary class="font-bold cursor-pointer">Moderation &amp; identity verification</summary><p class="text-xs text-slate-400 mt-2">Review all context before approval. Independently verify school affiliation and identity before approving Player or Coach profiles. Payment never verifies identity.</p><button id="community-review-refresh" class="mt-2 rounded-lg bg-slate-700 px-3 py-2 text-sm">Load pending reviews</button><div id="community-review-list" class="space-y-3 mt-3"></div></details>
+            </section>
+
             <!-- Top Controls & Active Tier Selector -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
@@ -734,6 +778,7 @@
     </main>
 
     <script src="teams.js" defer></script>
+    <script src="community.js" defer></script>
     <script>
         // App State Management
         const appState = {
@@ -866,18 +911,22 @@
         }
 
         // Chat Box Handlers
+        function escapeChat(value) {
+            return String(value).replace(/[&<>"']/g, c => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"}[c]));
+        }
+
         function renderChatMessages() {
             const box = document.getElementById('chat-box');
             box.innerHTML = appState.messages.map(m => `
                 <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
                     <div class="flex items-center justify-between mb-1">
                         <div class="flex items-center space-x-1.5">
-                            <span class="font-bold text-slate-200">${m.user}</span>
+                            <span class="font-bold text-slate-200">${escapeChat(m.user)}</span>
                             ${m.badge ? `<span class="text-[9px] px-1.5 py-0.2 rounded font-extrabold ${m.badge === 'PRO' ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30' : 'bg-indigo-500/20 text-indigo-300'}">${m.badge}</span>` : ''}
                         </div>
-                        <span class="text-[10px] text-slate-500 font-mono">${m.time}</span>
+                        <span class="text-[10px] text-slate-500 font-mono">${escapeChat(m.time)}</span>
                     </div>
-                    <p class="text-slate-300 leading-snug">${m.text}</p>
+                    <p class="text-slate-300 leading-snug">${escapeChat(m.text)}</p>
                 </div>
             `).join('');
             box.scrollTop = box.scrollHeight;
