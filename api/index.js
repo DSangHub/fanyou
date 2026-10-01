@@ -32,7 +32,7 @@ export async function dispatch(route,req,body){
   return {scores:await db('fanyou_profile_scores?points_enabled=eq.true&select=*&order=points.desc,display_name.asc&limit=100')};
  }
  if(route==='profiles'&&req.method==='GET'){
-  const rows=await db('fanyou_profiles?verified=eq.true&moderation_status=eq.approved&role=in.(player,coach)&select=id,display_name,role,school,sport,bio&order=display_name&limit=100');
+  const rows=await db('fanyou_profiles?verified=eq.true&moderation_status=eq.approved&role=in.(player,coach,manager)&select=id,display_name,role,school,sport,bio&order=display_name&limit=100');
   const access=rows.length?await db(`fanyou_subscriptions?user_id=in.(${rows.map(p=>id(p.id)).join(',')})&tier=eq.premier&status=eq.active&paid_through=gt.${encodeURIComponent(new Date().toISOString())}&select=user_id`):[];
   const premier=new Set(access.map(s=>s.user_id));const scores=rows.length?await db(`fanyou_profile_scores?profile_id=in.(${rows.map(p=>p.id).join(',')})&select=profile_id,points_enabled,points,rating_count,average_stars`):[];
   return {profiles:rows.map(p=>({...p,premier:premier.has(p.id),score:scores.find(s=>s.profile_id===p.id)||null}))};
@@ -46,8 +46,10 @@ export async function dispatch(route,req,body){
  if(route==='points-settings'&&req.method==='POST'){
   if(typeof body.enabled!=='boolean')throw new HttpError(400,'Choose whether to participate in points.');
   const profile=await ownProfile(user.id);
-  if(!profile||!['player','coach'].includes(profile.role))throw new HttpError(403,'Points participation is for Player and Coach profiles.');
-  await db(`fanyou_profiles?id=eq.${user.id}`,{method:'PATCH',body:{points_enabled:body.enabled},prefer:'return=minimal'});
+  if(!profile)throw new HttpError(403,'Create your profile before joining the points table.');
+  const change={points_enabled:body.enabled};
+  if(profile.role==='fan'){if(body.enabled&&!profile.points_enabled)change.moderation_status='pending';if(!body.enabled)change.moderation_status='approved';}
+  await db(`fanyou_profiles?id=eq.${user.id}`,{method:'PATCH',body:change,prefer:'return=minimal'});
   return {points_enabled:body.enabled};
  }
  if(route==='rate-reply'&&req.method==='POST'){
@@ -56,22 +58,22 @@ export async function dispatch(route,req,body){
   return {rating:Array.isArray(rating)?rating[0]:rating};
  }
  if(route==='profile'&&req.method==='POST'){
-  const role=body.role;if(!['fan','player','coach'].includes(role))throw new HttpError(400,'Select Fan, Player, or Coach.');
+  const role=body.role;if(!['fan','player','coach','manager'].includes(role))throw new HttpError(400,'Select Fan, Player, Coach, or Manager.');
   const display_name=text(body.display_name,2,80);
   const school=role==='fan'?'':text(body.school,2,100),sport=role==='fan'?'':text(body.sport,2,60),bio=role==='fan'?'':text(body.bio,5,600);
   const previous=await ownProfile(user.id);
   if(previous&&previous.role!==role)throw new HttpError(409,'Ask an administrator to change your profile role.');
   await screen([display_name,school,sport,bio].join('\n'),(await subscription(user.id)).premier);
-  // Fan names are private to their inbox. Claimed Player/Coach identities always require human verification.
-  const profile={id:user.id,display_name,role,school,sport,bio,verified:false,moderation_status:role==='fan'?'approved':'pending'};
+  // Fan names remain private unless they opt into the public points table. Claimed Player/Coach/Manager identities require human verification.
+  const profile={id:user.id,display_name,role,school,sport,bio,verified:false,moderation_status:role==='fan'&&!previous?.points_enabled?'approved':'pending'};
   await db('fanyou_profiles?on_conflict=id',{method:'POST',body:profile,prefer:'resolution=merge-duplicates,return=minimal'});
   return {profile};
  }
  if(route==='suggestions'&&req.method==='POST'){
   const author=await ownProfile(user.id);if(!author||author.moderation_status!=='approved')throw new HttpError(403,'Create your profile and wait for verification if required.');
   const recipient=id(body.recipient_id);
-  const target=(await db(`fanyou_profiles?id=eq.${recipient}&verified=eq.true&moderation_status=eq.approved&role=in.(player,coach)&select=id`))[0];
-  if(!target)throw new HttpError(400,'Choose a verified Player or Coach.');
+  const target=(await db(`fanyou_profiles?id=eq.${recipient}&verified=eq.true&moderation_status=eq.approved&role=in.(player,coach,manager)&select=id`))[0];
+  if(!target)throw new HttpError(400,'Choose a verified Player, Coach, or Manager.');
   const message=text(body.body,5,1500);
   const moderation=await screen(message,(await subscription(recipient)).premier);
   const result=await db('rpc/fanyou_submit_suggestion',{method:'POST',body:{p_author:user.id,p_recipient:recipient,p_body:message,p_status:moderation.status,p_screening:moderation.screening}});
@@ -95,7 +97,7 @@ export async function dispatch(route,req,body){
  if(route==='checkout'&&req.method==='POST')return checkout(user,body);
  if(route==='portal'&&req.method==='POST')return portal(user);
  if(route==='review-queue'&&req.method==='GET'){
-  admin(user);const [profiles,suggestions,replies]=await Promise.all([db('fanyou_profiles?role=in.(player,coach)&moderation_status=eq.pending&select=*&limit=100'),db('fanyou_suggestions?status=eq.pending&select=*&order=created_at&limit=100'),db('fanyou_replies?status=eq.pending&select=*&order=created_at&limit=100')]);
+  admin(user);const [profiles,suggestions,replies]=await Promise.all([db('fanyou_profiles?moderation_status=eq.pending&select=*&limit=100'),db('fanyou_suggestions?status=eq.pending&select=*&order=created_at&limit=100'),db('fanyou_replies?status=eq.pending&select=*&order=created_at&limit=100')]);
   return {profiles,suggestions,replies};
  }
  if(route==='review'&&req.method==='POST'){
@@ -108,7 +110,7 @@ export async function dispatch(route,req,body){
    basicCheck(content);
    const recipient=type==='suggestion'?record.recipient_id:record.author_id||record.id;
    if((await subscription(recipient)).premier){const check=await screen(content,true);if(check.status!=='approved')throw new HttpError(503,'OpenAI screening must succeed before Premier content can be approved.');}
-   if(type==='profile'&&body.verify!==true)throw new HttpError(400,'Confirm that you independently verified the Player or Coach identity.');
+   if(type==='profile'&&record.role!=='fan'&&body.verify!==true)throw new HttpError(400,'Confirm that you independently verified the Player, Coach, or Manager identity.');
   }
   await db('rpc/fanyou_review',{method:'POST',body:{p_reviewer:user.id,p_type:type,p_id:contentId,p_decision:decision,p_verify:type==='profile'&&body.verify===true}});
   return {reviewed:true};

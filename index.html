@@ -170,14 +170,31 @@
 
         <div id="view-demo" class="space-y-6">
             
+            <section id="futbol" aria-labelledby="futbol-heading" class="rounded-2xl border border-emerald-700 bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 p-5 sm:p-8 space-y-4">
+                <p class="text-sm font-semibold uppercase tracking-widest text-emerald-300">South America &amp; Europe</p>
+                <h1 id="futbol-heading" class="text-4xl sm:text-5xl font-extrabold">⚽ Futbol</h1>
+                <p class="text-lg text-slate-200">Fan, Player &amp; Manager Profiles</p>
+                <p class="text-slate-300">Find School, College, and Professional teams. Add your team, interact, and earn points and rewards.</p>
+                <p class="text-sm text-emerald-200">Points may be redeemed for tickets. Conditions apply.</p>
+                <div class="flex flex-wrap gap-2">
+                    <button data-futbol-profile="fan" class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Fan profile</button>
+                    <button data-futbol-profile="player" class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Player profile</button>
+                    <button data-futbol-profile="manager" class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Manager profile</button>
+                    <button id="futbol-browse" class="rounded-lg bg-slate-700 px-4 py-2 font-semibold">Browse Futbol teams</button>
+                    <button id="futbol-add-team" class="rounded-lg bg-slate-700 px-4 py-2 font-semibold">Add your team</button>
+                </div>
+                <details class="text-sm text-slate-400"><summary class="cursor-pointer">Ticket reward conditions</summary><p class="mt-2">Ticket redemption depends on participating reward offers, event availability, point requirements, and approval. Each available offer will state its requirements before you redeem. Points do not guarantee a ticket. Stars are recognition and are tracked separately from points.</p></details>
+            </section>
+
             <section aria-labelledby="teams-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
                 <div>
-                    <h1 id="teams-heading" class="text-2xl font-bold">High School &amp; College Teams — All Sports</h1>
+                    <h1 id="teams-heading" class="text-2xl font-bold">School, College &amp; Professional Teams — All Sports</h1>
                     <p class="text-sm text-slate-400 mt-2">Support your school, your sport, and your team. Add a team and follow your favorites.</p>
-                    <p class="text-xs text-slate-400 mt-2">Your teams and favorites are saved on this device. Team entries are community supplied, not verified school listings.</p>
+                    <p class="text-xs text-slate-400 mt-2">Your teams and favorites are saved on this device. Added teams are community supplied. Starter professional club listings are for discovery; club affiliation is not implied.</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <label class="text-sm">School level<select id="team-level-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All levels</option><option>High School</option><option>College</option></select></label>
+                    <label class="text-sm">School level<select id="team-level-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All levels</option><option>High School</option><option>School</option><option>College</option><option>Professional</option></select></label>
+                    <label class="text-sm">World region<select id="team-area-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All regions</option><option>South America</option><option>Europe</option><option>Other</option></select></label>
                     <label class="text-sm">Sport<select id="team-sport-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All sports</option></select></label>
                     <label class="text-sm">Search school or location<input id="team-search" type="search" placeholder="School, team, city, or state" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
                     <label class="text-sm flex items-center gap-2 self-end py-2"><input id="team-following-filter" type="checkbox" class="accent-indigo-500"> My followed teams</label>
@@ -185,28 +202,29 @@
                 <p id="team-status" role="status" aria-live="polite" class="text-sm text-indigo-300"></p>
                 <div id="team-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
                 <details class="border-t border-slate-800 pt-4" open>
-                    <summary class="font-bold cursor-pointer">Add your High School or College team</summary>
+                    <summary class="font-bold cursor-pointer">Add your School, College, or Professional team</summary>
                     <form id="team-form" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <label class="text-sm">School name<input name="school" required maxlength="100" placeholder="School or college name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
-                        <label class="text-sm">Team name / mascot<input name="mascot" required maxlength="80" placeholder="Your team name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
-                        <label class="text-sm">School level<select name="level" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option>High School</option><option>College</option></select></label>
+                        <label class="text-sm">School / college / club name<input name="school" required maxlength="100" placeholder="School or college name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">Team name / mascot (optional)<input name="mascot" maxlength="80" placeholder="Your team name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">School level<select name="level" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option>High School</option><option>School</option><option>College</option><option>Professional</option></select></label>
                         <label class="text-sm">Sport<select name="sport" id="team-form-sport" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
                         <label id="team-other-label" class="text-sm hidden">Other sport name<input name="otherSport" maxlength="60" disabled class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
                         <label class="text-sm">Team category<select name="category" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
                         <label class="text-sm">Division<select name="division" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
+                        <label class="text-sm">World region<select name="area" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">Choose a region (optional)</option><option>South America</option><option>Europe</option><option>Other</option></select></label>
                         <label class="text-sm">City<input name="city" required maxlength="80" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
-                        <label class="text-sm">State / region<input name="region" required maxlength="80" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">State / country<input name="region" required maxlength="80" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
                         <div class="flex items-end"><button type="submit" class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 p-2 font-semibold">Add &amp; follow team</button></div>
                     </form>
                 </details>
             </section>
 
             <section id="fan-community" aria-labelledby="suggestion-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
-                <div><h2 id="suggestion-heading" class="text-2xl font-bold">Fan Suggestion Box</h2><p class="text-slate-400 mt-2 text-sm">Share constructive ideas with Players and Coaches. Build a better team together.</p></div>
+                <div><h2 id="suggestion-heading" class="text-2xl font-bold">Fan Suggestion Box</h2><p class="text-slate-400 mt-2 text-sm">Share constructive ideas with Players, Coaches, and Managers. Build a better team together.</p></div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="rounded-xl bg-slate-950 border border-slate-700 p-4"><h3 class="font-bold">Free Fans</h3><p class="text-2xl font-bold mt-2">$0</p><p class="text-sm text-slate-400 mt-2">10 suggestions per calendar month. Resets on the first day of each month (UTC).</p></div>
                     <div class="rounded-xl bg-indigo-950 border border-indigo-600 p-4"><h3 class="font-bold">Unlimited Fans</h3><p class="text-2xl font-bold mt-2">$10/month <span class="text-sm font-normal">or $99/year</span></p><p class="text-sm text-slate-300 mt-2">Unlimited suggestions. The same strict content rules apply.</p><div class="flex flex-wrap gap-2 mt-3"><button data-buy="fan:month" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Monthly</button><button data-buy="fan:year" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Yearly</button></div></div>
-                    <div class="rounded-xl bg-slate-950 border border-purple-700 p-4"><h3 class="font-bold">Player &amp; Coach Premier</h3><p class="text-2xl font-bold mt-2">$10/month <span class="text-sm font-normal">or $99/year</span></p><p class="text-sm text-slate-300 mt-2">Verified profile, unlimited fan suggestions, and OpenAI screening for incoming suggestions and your replies. Identity verification is required.</p><div class="flex flex-wrap gap-2 mt-3"><button data-buy="premier:month" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Monthly</button><button data-buy="premier:year" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Yearly</button></div></div>
+                    <div class="rounded-xl bg-slate-950 border border-purple-700 p-4"><h3 class="font-bold">Player, Coach &amp; Manager Premier</h3><p class="text-2xl font-bold mt-2">$10/month <span class="text-sm font-normal">or $99/year</span></p><p class="text-sm text-slate-300 mt-2">Verified profile, unlimited fan suggestions, and OpenAI screening for incoming suggestions and your replies. Identity verification is required.</p><div class="flex flex-wrap gap-2 mt-3"><button data-buy="premier:month" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Monthly</button><button data-buy="premier:year" class="rounded-lg bg-purple-600 px-3 py-2 text-sm">Yearly</button></div></div>
                 </div>
                 <p class="text-xs text-slate-400">Plans renew automatically until cancelled. Manage cancellation in Billing. Basic profiles use moderator review; Premier profiles add OpenAI screening. No profanity, threats, harassment, hate, sexual content, spam, impersonation, or private contact details. Screening can miss context; human review is available. Unlimited suggestions remain subject to anti-spam limits.</p>
                 <p id="community-status" role="status" aria-live="polite" class="text-sm text-indigo-300"></p>
@@ -221,41 +239,41 @@
                 <div id="community-account" class="hidden space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-2"><p id="community-usage" class="font-semibold text-indigo-300"></p><div class="flex gap-2"><button id="community-billing" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Billing</button><button id="community-logout" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Sign out</button></div></div>
                     <details id="community-profile-details" class="rounded-xl bg-slate-950 border border-slate-700 p-4" open>
-                        <summary class="font-bold cursor-pointer">Your Fan, Player, or Coach profile</summary>
+                        <summary class="font-bold cursor-pointer">Your Fan, Player, Coach, or Manager profile</summary>
                         <p id="community-profile-status" class="text-sm text-slate-400 mt-2"></p>
                         <form id="community-profile-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                             <label class="text-sm">Display name<input name="display_name" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
-                            <label class="text-sm">Profile type<select name="role" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="fan">Fan</option><option value="player">Player</option><option value="coach">Coach</option></select></label>
+                            <label class="text-sm">Profile type<select name="role" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="fan">Fan</option><option value="player">Player</option><option value="coach">Coach</option><option value="manager">Manager</option></select></label>
                             <label data-profile-field class="text-sm hidden">School / team<input name="school" maxlength="100" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
                             <label data-profile-field class="text-sm hidden">Sport<input name="sport" maxlength="60" placeholder="Any sport" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
                             <label data-profile-field class="text-sm hidden sm:col-span-2">About you<textarea name="bio" maxlength="600" rows="3" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
-                            <p data-profile-field class="text-xs text-slate-400 hidden sm:col-span-2">Only create a profile for yourself. Player and Coach profiles require independent verification. Profile edits require verification again. Do not include private information about yourself or minors.</p>
+                            <p data-profile-field class="text-xs text-slate-400 hidden sm:col-span-2">Only create a profile for yourself. Player, Coach, and Manager profiles require independent verification. Profile edits require verification again. Do not include private information about yourself or minors.</p>
                             <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 sm:col-span-2">Save profile</button>
                         </form>
                     </details>
                     <div id="community-points-settings" class="hidden rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-2">
                         <h3 class="font-bold">Optional interaction points</h3>
-                        <label class="flex gap-2 items-center text-sm"><input id="community-points-enabled" type="checkbox" class="accent-indigo-500"> Join the public Player &amp; Coach points table</label>
-                        <p class="text-xs text-slate-400">Earn 10 points for each approved reply to a fan suggestion after joining. Leaving hides your row and stops new points; your earned points stay saved. Pending or rejected interactions do not count.</p>
+                        <label class="flex gap-2 items-center text-sm"><input id="community-points-enabled" type="checkbox" class="accent-indigo-500"> Join the public interaction points table</label>
+                        <p class="text-xs text-slate-400">Earn 10 points per approved suggestion (Fans) or approved reply (Players, Coaches, and Managers) after joining. Leaving hides your row and stops new points; your earned points stay saved. Pending or rejected interactions do not count. Fan display names require moderator approval before appearing publicly.</p>
                         <p id="community-points-total" class="text-sm text-indigo-300"></p>
                         <button id="community-points-save" type="button" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Save points preference</button>
                     </div>
                     <form id="community-suggestion-form" class="rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-3">
                         <h3 class="font-bold">Send a fan suggestion</h3>
-                        <label class="block text-sm">Player or Coach<select name="recipient_id" id="community-recipient" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified profile</option></select></label>
+                        <label class="block text-sm">Player, Coach, or Manager<select name="recipient_id" id="community-recipient" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified profile</option></select></label>
                         <label class="block text-sm">Your suggestion<textarea name="body" required minlength="5" maxlength="1500" rows="4" placeholder="Keep it constructive and respectful." class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
                         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2">Submit for moderation</button>
                     </form>
                     <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
                 </div>
-                <div><h3 class="font-bold">Verified Players &amp; Coaches</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
+                <div><h3 class="font-bold">Verified Players, Coaches &amp; Managers</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
                 <details id="community-points-table" class="border-t border-slate-700 pt-4">
-                    <summary class="font-bold cursor-pointer">Optional Player &amp; Coach Points Table</summary>
-                    <p class="text-xs text-slate-400 mt-2">10 points per approved reply. Paid fans can optionally award 1–5 stars to replies they receive. Stars and interaction points are tracked separately.</p>
-                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm text-left"><thead><tr class="border-b border-slate-700"><th scope="col" class="p-2">Player / Coach</th><th scope="col" class="p-2">Team / Sport</th><th scope="col" class="p-2">Points</th><th scope="col" class="p-2">Average stars</th><th scope="col" class="p-2">Ratings</th></tr></thead><tbody id="community-points-rows"></tbody></table></div>
+                    <summary class="font-bold cursor-pointer">Optional Interaction Points Table</summary>
+                    <p class="text-xs text-slate-400 mt-2">10 points per approved interaction. Paid fans can optionally award 1–5 stars to replies they receive. Stars and interaction points are tracked separately.</p>
+                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm text-left"><thead><tr class="border-b border-slate-700"><th scope="col" class="p-2">Profile</th><th scope="col" class="p-2">Team / Sport</th><th scope="col" class="p-2">Points</th><th scope="col" class="p-2">Average stars</th><th scope="col" class="p-2">Ratings</th></tr></thead><tbody id="community-points-rows"></tbody></table></div>
                     <p id="community-points-empty" class="text-sm text-slate-400 mt-2"></p>
                 </details>
-                <details id="community-admin" class="hidden border-t border-slate-700 pt-4"><summary class="font-bold cursor-pointer">Moderation &amp; identity verification</summary><p class="text-xs text-slate-400 mt-2">Review all context before approval. Independently verify school affiliation and identity before approving Player or Coach profiles. Payment never verifies identity.</p><button id="community-review-refresh" class="mt-2 rounded-lg bg-slate-700 px-3 py-2 text-sm">Load pending reviews</button><div id="community-review-list" class="space-y-3 mt-3"></div></details>
+                <details id="community-admin" class="hidden border-t border-slate-700 pt-4"><summary class="font-bold cursor-pointer">Moderation &amp; identity verification</summary><p class="text-xs text-slate-400 mt-2">Review all context before approval. Independently verify school or club affiliation and identity before approving Player, Coach, or Manager profiles. Payment never verifies identity.</p><button id="community-review-refresh" class="mt-2 rounded-lg bg-slate-700 px-3 py-2 text-sm">Load pending reviews</button><div id="community-review-list" class="space-y-3 mt-3"></div></details>
             </section>
 
             <!-- Top Controls & Active Tier Selector -->
