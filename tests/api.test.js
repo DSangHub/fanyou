@@ -5,3 +5,16 @@ test('unconfigured features fail closed without collecting data or payment',asyn
 test('malformed JSON, oversize input and unsafe origins are rejected',async()=>{let req=Readable.from(['not json']);Object.assign(req,{method:'POST',url:'/api/login',headers:{'content-type':'application/json'}});assert.equal((await run(req)).status,400);req=request('POST','/api/login',{email:'x'.repeat(40000)},{'content-type':'application/json'});assert.equal((await run(req)).status,413);assert.equal((await run(request('POST','/api/signup',{}, {'content-type':'application/json',origin:'https://attacker.example'}))).status,403);});
 test('webhook rejects requests when signing secret is missing',async()=>{const result=await run(request('POST','/api/webhook',{}));assert.equal(result.status,503);});
 test('auth validates email and user with Supabase instead of trusting JWT claims',async()=>{const previous={fetch:global.fetch,url:process.env.SUPABASE_URL,pub:process.env.SUPABASE_PUBLISHABLE_KEY,service:process.env.SUPABASE_SERVICE_ROLE_KEY};try{process.env.SUPABASE_URL='https://example.supabase.co';process.env.SUPABASE_PUBLISHABLE_KEY='test';process.env.SUPABASE_SERVICE_ROLE_KEY='test';global.fetch=async()=>({ok:true,json:async()=>({id:'11111111-1111-4111-8111-111111111111',is_anonymous:false,email_confirmed_at:null,app_metadata:{fanyou_admin:true}})});await assert.rejects(auth({headers:{authorization:'Bearer fake.jwt.value'}}),/verify your email/);global.fetch=async()=>({ok:false});await assert.rejects(auth({headers:{authorization:'Bearer fake.jwt.value'}}),/session expired/);}finally{global.fetch=previous.fetch;for(const [name,value] of [['SUPABASE_URL',previous.url],['SUPABASE_PUBLISHABLE_KEY',previous.pub],['SUPABASE_SERVICE_ROLE_KEY',previous.service]])if(value===undefined)delete process.env[name];else process.env[name]=value;}});
+test('Fans joining the public points table require display-name review',async()=>{
+ const originalFetch=global.fetch;const names=['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SERVICE_ROLE_KEY'];const previous=names.map(n=>process.env[n]);
+ try{
+ process.env.SUPABASE_URL='https://example.supabase.co';process.env.SUPABASE_PUBLISHABLE_KEY='test';process.env.SUPABASE_SERVICE_ROLE_KEY='test';let changed;
+ global.fetch=async(url,options={})=>{
+  if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'11111111-1111-4111-8111-111111111111',email_confirmed_at:'2026-10-01',is_anonymous:false})};
+  if(options.method==='PATCH'){changed=JSON.parse(options.body);return {ok:true,json:async()=>null};}
+  return {ok:true,json:async()=>[{role:'fan',points_enabled:false,moderation_status:'approved'}]};
+ };
+ await dispatch('points-settings',{method:'POST',headers:{authorization:'Bearer fake.jwt'}},{enabled:true});assert.deepEqual(changed,{points_enabled:true,moderation_status:'pending'});
+ await dispatch('points-settings',{method:'POST',headers:{authorization:'Bearer fake.jwt'}},{enabled:false});assert.deepEqual(changed,{points_enabled:false,moderation_status:'approved'});
+ }finally{global.fetch=originalFetch;names.forEach((name,i)=>{if(previous[i]===undefined)delete process.env[name];else process.env[name]=previous[i];});}
+});
