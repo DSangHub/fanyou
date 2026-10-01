@@ -28,10 +28,14 @@ export async function dispatch(route,req,body){
   if(!response.ok)throw new HttpError(401,'Please sign in again.');
   const data=await response.json();return {access_token:data.access_token,refresh_token:data.refresh_token,expires_in:data.expires_in};
  }
+ if(route==='points-table'&&req.method==='GET'){
+  return {scores:await db('fanyou_profile_scores?points_enabled=eq.true&select=*&order=points.desc,display_name.asc&limit=100')};
+ }
  if(route==='profiles'&&req.method==='GET'){
   const rows=await db('fanyou_profiles?verified=eq.true&moderation_status=eq.approved&role=in.(player,coach)&select=id,display_name,role,school,sport,bio&order=display_name&limit=100');
   const access=rows.length?await db(`fanyou_subscriptions?user_id=in.(${rows.map(p=>id(p.id)).join(',')})&tier=eq.premier&status=eq.active&paid_through=gt.${encodeURIComponent(new Date().toISOString())}&select=user_id`):[];
-  const premier=new Set(access.map(s=>s.user_id));return {profiles:rows.map(p=>({...p,premier:premier.has(p.id)}))};
+  const premier=new Set(access.map(s=>s.user_id));const scores=rows.length?await db(`fanyou_profile_scores?profile_id=in.(${rows.map(p=>p.id).join(',')})&select=profile_id,points_enabled,points,rating_count,average_stars`):[];
+  return {profiles:rows.map(p=>({...p,premier:premier.has(p.id),score:scores.find(s=>s.profile_id===p.id)||null}))};
  }
  const user=await auth(req);
  if(route==='logout'&&req.method==='POST'){
@@ -39,6 +43,18 @@ export async function dispatch(route,req,body){
   return {signed_out:true};
  }
  if(route==='account'&&req.method==='GET')return {...await account(user.id),admin:user.app_metadata?.fanyou_admin===true};
+ if(route==='points-settings'&&req.method==='POST'){
+  if(typeof body.enabled!=='boolean')throw new HttpError(400,'Choose whether to participate in points.');
+  const profile=await ownProfile(user.id);
+  if(!profile||!['player','coach'].includes(profile.role))throw new HttpError(403,'Points participation is for Player and Coach profiles.');
+  await db(`fanyou_profiles?id=eq.${user.id}`,{method:'PATCH',body:{points_enabled:body.enabled},prefer:'return=minimal'});
+  return {points_enabled:body.enabled};
+ }
+ if(route==='rate-reply'&&req.method==='POST'){
+  if(!Number.isInteger(body.stars)||body.stars<1||body.stars>5)throw new HttpError(400,'Choose a whole number from 1 to 5 stars.');
+  const rating=await db('rpc/fanyou_rate_reply',{method:'POST',body:{p_fan:user.id,p_reply:id(body.reply_id),p_stars:body.stars}});
+  return {rating:Array.isArray(rating)?rating[0]:rating};
+ }
  if(route==='profile'&&req.method==='POST'){
   const role=body.role;if(!['fan','player','coach'].includes(role))throw new HttpError(400,'Select Fan, Player, or Coach.');
   const display_name=text(body.display_name,2,80);
@@ -64,7 +80,8 @@ export async function dispatch(route,req,body){
  if(route==='suggestions'&&req.method==='GET'){
   const suggestions=await db(`fanyou_suggestions?or=(author_id.eq.${user.id},and(recipient_id.eq.${user.id},status.eq.approved))&select=*&order=created_at.desc&limit=100`);
   const replies=suggestions.length?await db(`fanyou_replies?suggestion_id=in.(${suggestions.map(s=>id(s.id)).join(',')})&or=(status.eq.approved,author_id.eq.${user.id})&select=id,suggestion_id,body,status,created_at,author_id&order=created_at.asc&limit=500`):[];
-  return {suggestions:suggestions.map(s=>({...s,replies:replies.filter(r=>r.suggestion_id===s.id)})),user_id:user.id};
+  const ratings=replies.length?await db(`fanyou_star_ratings?reply_id=in.(${replies.map(r=>id(r.id)).join(',')})&select=reply_id,stars`):[];
+  return {suggestions:suggestions.map(s=>({...s,replies:replies.filter(r=>r.suggestion_id===s.id).map(r=>({...r,stars:ratings.find(v=>v.reply_id===r.id)?.stars||null}))})),user_id:user.id};
  }
  if(route==='reply'&&req.method==='POST'){
   const suggestion=id(body.suggestion_id),message=text(body.body,2,1500);

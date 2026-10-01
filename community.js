@@ -39,6 +39,10 @@
   profileFields();
   $('community-profile-status').textContent=p?`${p.role} profile · ${p.moderation_status}${p.verified?' · Identity verified':''}`:'Save a Fan profile to start, or submit your Player / Coach profile for verification.';
   $('community-profile-details').open=!p||p.moderation_status!=='approved';
+  const eligible=p&&['player','coach'].includes(p.role);
+  $('community-points-settings').classList.toggle('hidden',!eligible);
+  $('community-points-enabled').checked=Boolean(p?.points_enabled);
+  $('community-points-total').textContent=current.score?`${current.score.points} points · ${current.score.rating_count} fan ratings${current.score.average_stars?` · ${current.score.average_stars}/5 stars`:''}`:'Points start after your profile is verified and you join the table.';
   await loadInbox();
  }
  async function loadDirectory(){
@@ -50,6 +54,8 @@
    const card=document.createElement('article');card.className='bg-slate-950 border border-slate-700 rounded-xl p-4 space-y-2 break-words';
    const title=document.createElement('h4');title.className='font-bold';title.textContent=p.display_name;
    card.append(title,paragraph(`${p.role==='player'?'Player':'Coach'} · ${p.school} · ${p.sport}`),paragraph(p.bio),paragraph(p.premier?'Premier · OpenAI content screening':'Basic · Moderator review','text-xs text-indigo-300'));
+   if(p.score?.rating_count)card.append(paragraph(`★ ${p.score.average_stars}/5 · ${p.score.rating_count} fan ratings`,'text-sm text-amber-300'));
+   if(p.score?.points_enabled)card.append(paragraph(`${p.score.points} interaction points`,'text-sm text-indigo-300'));
    directory.append(card);select.add(new Option(`${p.display_name} — ${p.role}, ${p.school}, ${p.sport}`,p.id));
   }
   if(profiles.some(p=>p.id===selected))select.value=selected;
@@ -61,13 +67,32 @@
    const card=document.createElement('article');card.className='bg-slate-950 border border-slate-700 rounded-xl p-4 space-y-2 break-words';
    const target=profiles.find(p=>p.id===s.recipient_id)?.display_name||'Player / Coach';
    card.append(paragraph(`${s.author_id===user_id?`To ${target}`:'Incoming fan suggestion'} · ${s.status} · ${new Date(s.created_at).toLocaleDateString()}`,'text-xs text-indigo-300'),paragraph(s.body,'text-sm text-slate-200 whitespace-pre-wrap'));
-   for(const r of s.replies)card.append(paragraph(`Reply (${r.status}): ${r.body}`,'text-sm text-emerald-300 whitespace-pre-wrap'));
+   for(const r of s.replies){
+    card.append(paragraph(`Reply (${r.status}): ${r.body}`,'text-sm text-emerald-300 whitespace-pre-wrap'));
+    if(r.stars)card.append(paragraph(`${r.stars} of 5 stars awarded`,'text-sm text-amber-300'));
+    if(current?.unlimited&&current?.profile?.role==='fan'&&s.author_id===user_id&&s.status==='approved'&&r.status==='approved'&&r.author_id!==user_id){
+     const form=document.createElement('form');form.className='flex flex-wrap gap-2 items-end';form.dataset.starRating=r.id;
+     const label=document.createElement('label');label.className='text-sm text-amber-300';label.textContent='Reward this interaction (optional)';
+     const select=document.createElement('select');select.className='block mt-1 rounded-lg bg-slate-900 border border-slate-700 p-2';select.required=true;select.append(new Option('Choose 1–5 stars',''));
+     for(let n=1;n<=5;n++)select.append(new Option(`${n} ${n===1?'star':'stars'}`,String(n)));
+     if(r.stars)select.value=String(r.stars);label.append(select);
+     const button=document.createElement('button');button.type='submit';button.textContent=r.stars?'Update stars':'Award stars';button.className='rounded-lg bg-amber-600 px-3 py-2 text-sm';
+     form.append(label,button);form.addEventListener('submit',e=>{e.preventDefault();action(button,async()=>{await api('rate-reply',{reply_id:r.id,stars:Number(select.value)});message('Star rating saved.');await loadInbox();await loadDirectory();await loadPoints();});});card.append(form);
+    }
+   }
    if(s.recipient_id===user_id&&s.status==='approved'){
     const form=document.createElement('form');form.className='space-y-2';const label=document.createElement('label');label.className='block text-sm';label.textContent='Your reply';const input=document.createElement('textarea');input.required=true;input.minLength=2;input.maxLength=1500;input.rows=3;input.className='mt-1 w-full rounded-lg bg-slate-900 border border-slate-700 p-2';label.append(input);
     const button=document.createElement('button');button.type='submit';button.textContent='Submit moderated reply';button.className='rounded-lg bg-indigo-600 px-3 py-2 text-sm';
     form.append(label,button);form.addEventListener('submit',e=>{e.preventDefault();action(button,async()=>{const data=await api('reply',{suggestion_id:s.id,body:input.value});message(`Reply ${data.reply.status==='approved'?'delivered after OpenAI screening':'held for moderator review'}.`);await loadInbox();});});card.append(form);
    }
    inbox.append(card);
+  }
+ }
+ async function loadPoints(){
+  const {scores}=await api('points-table',null,false);const rows=$('community-points-rows');rows.replaceChildren();
+  $('community-points-empty').textContent=scores.length?'':'No participating verified Players or Coaches yet.';
+  for(const score of scores){const row=document.createElement('tr');row.className='border-b border-slate-800';
+   for(const value of [`${score.display_name} (${score.role})`,`${score.school} · ${score.sport}`,score.points,score.rating_count?`${score.average_stars}/5`:'No ratings',score.rating_count]){const cell=document.createElement('td');cell.className='p-2 break-words';cell.textContent=String(value);row.append(cell);}rows.append(row);
   }
  }
  async function loadReviews(){
@@ -77,7 +102,7 @@
    card.append(paragraph(`${type} · ${item.id}`,'text-xs text-indigo-300'),paragraph(type==='profile'?`${item.display_name} · ${item.role} · ${item.school} · ${item.sport}\n${item.bio}`:item.body,'text-sm text-slate-200 whitespace-pre-wrap'));
    const verify=document.createElement('input');verify.type='checkbox';
    if(type==='profile'){const label=document.createElement('label');label.className='flex gap-2 items-center text-sm';label.append(verify,document.createTextNode('I independently verified this person’s identity and school affiliation.'));card.append(label);}
-   for(const decision of ['approved','rejected']){const button=document.createElement('button');button.type='button';button.textContent=decision==='approved'?'Approve':'Reject';button.className='rounded-lg bg-slate-700 px-3 py-2 text-sm mr-2';button.addEventListener('click',()=>action(button,async()=>{await api('review',{type,id:item.id,decision,verify:verify.checked});message('Moderation decision saved.');await loadReviews();await loadDirectory();}));card.append(button);}
+   for(const decision of ['approved','rejected']){const button=document.createElement('button');button.type='button';button.textContent=decision==='approved'?'Approve':'Reject';button.className='rounded-lg bg-slate-700 px-3 py-2 text-sm mr-2';button.addEventListener('click',()=>action(button,async()=>{await api('review',{type,id:item.id,decision,verify:verify.checked});message('Moderation decision saved.');await loadReviews();await loadDirectory();await loadPoints();}));card.append(button);}
    list.append(card);
   }
   if(!list.children.length)list.append(paragraph('No pending reviews.'));
@@ -89,8 +114,9 @@
  document.querySelectorAll('[data-buy]').forEach(button=>button.addEventListener('click',()=>action(button,async()=>{if(!session){message('Create an account or sign in before subscribing.');$('community-auth').scrollIntoView({behavior:'smooth'});return;}const [tier,interval]=button.dataset.buy.split(':');const {url}=await api('checkout',{tier,interval});if(new URL(url).hostname!=='checkout.stripe.com')throw new Error('Unexpected checkout address.');window.location.assign(url);}))); 
  $('community-billing').addEventListener('click',e=>action(e.currentTarget,async()=>{const {url}=await api('portal',{});if(new URL(url).hostname!=='billing.stripe.com')throw new Error('Unexpected billing address.');window.location.assign(url);}));
  $('community-logout').addEventListener('click',e=>action(e.currentTarget,async()=>{try{await api('logout',{});}finally{storeSession(null);current=null;authUI();$('community-inbox').replaceChildren();message('Signed out.');}}));
- $('community-refresh').addEventListener('click',e=>action(e.currentTarget,loadAccount));
+ $('community-points-save').addEventListener('click',e=>action(e.currentTarget,async()=>{await api('points-settings',{enabled:$('community-points-enabled').checked});await loadAccount();await loadDirectory();await loadPoints();message('Points preference saved.');}));
+ $('community-refresh').addEventListener('click',e=>action(e.currentTarget,async()=>{await loadAccount();await loadDirectory();await loadPoints();}));
  $('community-review-refresh').addEventListener('click',e=>action(e.currentTarget,loadReviews));
  profileFields();authUI();
- (async()=>{try{config=await api('config',null,false);if(!config.ready){message('Accounts and suggestions are coming soon. Paid checkout will open after activation.');document.querySelectorAll('#fan-community button').forEach(b=>b.disabled=true);return;}await loadDirectory();await loadAccount();if(!config.billing)message('Free accounts are available. Paid checkout is awaiting activation.');const billing=new URLSearchParams(location.search).get('billing');if(billing==='success')message('Checkout received. Paid access appears after payment confirmation; use Refresh to check.');if(billing==='cancelled')message('Checkout cancelled. Your free membership remains available.');}catch(error){message(error.message);}})();
+ (async()=>{try{config=await api('config',null,false);if(!config.ready){message('Accounts and suggestions are coming soon. Paid checkout will open after activation.');document.querySelectorAll('#fan-community button').forEach(b=>b.disabled=true);return;}await loadDirectory();await loadPoints();await loadAccount();if(!config.billing)message('Free accounts are available. Paid checkout is awaiting activation.');const billing=new URLSearchParams(location.search).get('billing');if(billing==='success')message('Checkout received. Paid access appears after payment confirmation; use Refresh to check.');if(billing==='cancelled')message('Checkout cancelled. Your free membership remains available.');}catch(error){message(error.message);}})();
 })();
