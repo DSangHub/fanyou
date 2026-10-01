@@ -233,6 +233,13 @@
                             <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 sm:col-span-2">Save profile</button>
                         </form>
                     </details>
+                    <div id="community-points-settings" class="hidden rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-2">
+                        <h3 class="font-bold">Optional interaction points</h3>
+                        <label class="flex gap-2 items-center text-sm"><input id="community-points-enabled" type="checkbox" class="accent-indigo-500"> Join the public Player &amp; Coach points table</label>
+                        <p class="text-xs text-slate-400">Earn 10 points for each approved reply to a fan suggestion after joining. Leaving hides your row and stops new points; your earned points stay saved. Pending or rejected interactions do not count.</p>
+                        <p id="community-points-total" class="text-sm text-indigo-300"></p>
+                        <button id="community-points-save" type="button" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Save points preference</button>
+                    </div>
                     <form id="community-suggestion-form" class="rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-3">
                         <h3 class="font-bold">Send a fan suggestion</h3>
                         <label class="block text-sm">Player or Coach<select name="recipient_id" id="community-recipient" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified profile</option></select></label>
@@ -242,6 +249,12 @@
                     <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
                 </div>
                 <div><h3 class="font-bold">Verified Players &amp; Coaches</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
+                <details id="community-points-table" class="border-t border-slate-700 pt-4">
+                    <summary class="font-bold cursor-pointer">Optional Player &amp; Coach Points Table</summary>
+                    <p class="text-xs text-slate-400 mt-2">10 points per approved reply. Paid fans can optionally award 1–5 stars to replies they receive. Stars and interaction points are tracked separately.</p>
+                    <div class="overflow-x-auto mt-3"><table class="w-full text-sm text-left"><thead><tr class="border-b border-slate-700"><th scope="col" class="p-2">Player / Coach</th><th scope="col" class="p-2">Team / Sport</th><th scope="col" class="p-2">Points</th><th scope="col" class="p-2">Average stars</th><th scope="col" class="p-2">Ratings</th></tr></thead><tbody id="community-points-rows"></tbody></table></div>
+                    <p id="community-points-empty" class="text-sm text-slate-400 mt-2"></p>
+                </details>
                 <details id="community-admin" class="hidden border-t border-slate-700 pt-4"><summary class="font-bold cursor-pointer">Moderation &amp; identity verification</summary><p class="text-xs text-slate-400 mt-2">Review all context before approval. Independently verify school affiliation and identity before approving Player or Coach profiles. Payment never verifies identity.</p><button id="community-review-refresh" class="mt-2 rounded-lg bg-slate-700 px-3 py-2 text-sm">Load pending reviews</button><div id="community-review-list" class="space-y-3 mt-3"></div></details>
             </section>
 

@@ -59,3 +59,11 @@ node --env-file=.env server.js
 ## Activation state
 
 Code alone does not activate payments, OpenAI, or an account database. Without the required Supabase configuration, the UI displays an activation notice and disables signup/posting/payment buttons. Checkout stays closed until both explicit enablement and signing-secret configuration are present. This prevents collecting payments for an inactive suggestion/profile service.
+
+## Optional interaction points and fan stars
+
+Apply `database/points-stars.sql` once after the base database setup. Players and Coaches can enable points from their signed-in profile. The public table shows only participating, approved, identity-verified profiles. Each new approved reply to another fan's suggestion earns **10 points**, whether approved by OpenAI or a human. Points start after opting in; there is no automatic backfill. Turning participation off hides the public row and stops new awards while retaining already earned points. Duplicate approvals cannot award points twice, and rejecting a reply removes its award. Only approved parent suggestions/replies contribute to totals.
+
+An active paid **Fan** may optionally award **1–5 stars** to an approved reply to their own approved suggestion. One rating is stored per reply; editing it replaces the prior rating. Other fans, self-interactions, free/expired/restricted memberships, and unapproved replies cannot award stars. Existing historical ratings remain after a membership expires, but new ratings/edits require active payment. Average stars and rating count appear on verified profiles and in the optional points table. Star ratings and interaction points are separate and do not grant paid access.
+
+The server and database enforce eligibility. Points are issued by a database trigger, not a client button. New tables have RLS and no browser grants; score aggregates use a server-only security-invoker view.
