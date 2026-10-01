@@ -170,6 +170,37 @@
 
         <div id="view-demo" class="space-y-6">
             
+            <section aria-labelledby="teams-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
+                <div>
+                    <h1 id="teams-heading" class="text-2xl font-bold">High School &amp; College Teams — All Sports</h1>
+                    <p class="text-sm text-slate-400 mt-2">Support your school, your sport, and your team. Add a team and follow your favorites.</p>
+                    <p class="text-xs text-slate-400 mt-2">Your teams and favorites are saved on this device. Team entries are community supplied, not verified school listings.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <label class="text-sm">School level<select id="team-level-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All levels</option><option>High School</option><option>College</option></select></label>
+                    <label class="text-sm">Sport<select id="team-sport-filter" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option value="">All sports</option></select></label>
+                    <label class="text-sm">Search school or location<input id="team-search" type="search" placeholder="School, team, city, or state" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                    <label class="text-sm flex items-center gap-2 self-end py-2"><input id="team-following-filter" type="checkbox" class="accent-indigo-500"> My followed teams</label>
+                </div>
+                <p id="team-status" role="status" aria-live="polite" class="text-sm text-indigo-300"></p>
+                <div id="team-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                <details class="border-t border-slate-800 pt-4" open>
+                    <summary class="font-bold cursor-pointer">Add your High School or College team</summary>
+                    <form id="team-form" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <label class="text-sm">School name<input name="school" required maxlength="100" placeholder="School or college name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">Team name / mascot<input name="mascot" required maxlength="80" placeholder="Your team name" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">School level<select name="level" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"><option>High School</option><option>College</option></select></label>
+                        <label class="text-sm">Sport<select name="sport" id="team-form-sport" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
+                        <label id="team-other-label" class="text-sm hidden">Other sport name<input name="otherSport" maxlength="60" disabled class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">Team category<select name="category" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
+                        <label class="text-sm">Division<select name="division" required class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></select></label>
+                        <label class="text-sm">City<input name="city" required maxlength="80" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <label class="text-sm">State / region<input name="region" required maxlength="80" class="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 p-2"></label>
+                        <div class="flex items-end"><button type="submit" class="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 p-2 font-semibold">Add &amp; follow team</button></div>
+                    </form>
+                </details>
+            </section>
+
             <!-- Top Controls & Active Tier Selector -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="flex items-center space-x-3">
@@ -702,6 +733,7 @@
 
     </main>
 
+    <script src="teams.js" defer></script>
     <script>
         // App State Management
         const appState = {
