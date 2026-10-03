@@ -8,6 +8,14 @@
         {id:'futbol-river-plate',school:'River Plate',city:'Buenos Aires',region:'Argentina',area:'South America',source:'https://www.cariverplate.com.ar/'},
         {id:'futbol-flamengo',school:'Flamengo',city:'Rio de Janeiro',region:'Brazil',area:'South America',source:'https://www.flamengo.com.br/'}
     ].map(t=>({...t,mascot:'',sport:'Soccer',level:'Professional',category:'Open',division:'Professional',followed:false}));
+    const EXTRA_TEAMS = [
+        {id:'football-49ers',school:'San Francisco 49ers',sport:'Football',city:'Santa Clara',region:'CA',source:'https://www.49ers.com/'},
+        {id:'baseball-dodgers',school:'Los Angeles Dodgers',sport:'Baseball',city:'Los Angeles',region:'CA',source:'https://www.mlb.com/dodgers'},
+        {id:'basketball-lakers',school:'Los Angeles Lakers',sport:'Basketball',city:'Los Angeles',region:'CA',source:'https://www.nba.com/lakers/'},
+        {id:'hockey-kings',school:'Los Angeles Kings',sport:'Ice Hockey',city:'Los Angeles',region:'CA',source:'https://www.nhl.com/kings/'},
+        {id:'college-fresno-football',school:'Fresno State',mascot:'Bulldogs',sport:'Football',level:'College',division:'NCAA Division I',city:'Fresno',region:'CA',source:'https://gobulldogs.com/sports/football'}
+    ].map(t=>({mascot:'',area:'Other',level:'Professional',category:'Open',division:'Professional',followed:false,...t}));
+    const STARTER_TEAMS = [...STARTER_CLUBS, ...EXTRA_TEAMS];
     const form = document.getElementById('team-form');
     const list = document.getElementById('team-list');
     const status = document.getElementById('team-status');
@@ -23,7 +31,7 @@
         const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
         teams = Array.isArray(saved) ? saved.filter(validTeam) : [];
     } catch { storageAvailable = false; }
-    for(const seed of STARTER_CLUBS)if(!teams.some(t=>t.id===seed.id||(t.school.toLocaleLowerCase()===seed.school.toLocaleLowerCase()&&t.level===seed.level&&t.sport===seed.sport)))teams.push({...seed});
+    for(const seed of STARTER_TEAMS)if(!teams.some(t=>t.id===seed.id||(t.school.toLocaleLowerCase()===seed.school.toLocaleLowerCase()&&t.level===seed.level&&t.sport===seed.sport)))teams.push({...seed});
     function option(value) { return new Option(value, value); }
     SPORTS.forEach(s => form.elements.sport.add(s==='Soccer'?new Option('Soccer / Futbol','Soccer'):option(s)));
     function sportFilters() {
@@ -47,6 +55,7 @@
         const visible = teams.filter(t => (!level.value || t.level === level.value) && (!sport.value || t.sport === sport.value) && (!area.value || t.area === area.value) && (!following.checked || t.followed) && [t.school, t.mascot, t.city, t.region, t.sport].join(' ').toLocaleLowerCase().includes(query));
         list.replaceChildren();
         status.textContent = `${visible.length} team${visible.length === 1 ? '' : 's'} shown · ${teams.filter(t => t.followed).length} followed${storageAvailable ? '' : ' · Saving is unavailable. Changes last only for this visit.'}`;
+        updatePicker();
         if (!visible.length) {
             const empty = document.createElement('p');
             empty.className = 'text-sm text-slate-400 sm:col-span-2 lg:col-span-3 py-4';
@@ -73,8 +82,8 @@
             button.setAttribute('aria-label', `${t.followed ? 'Unfollow' : 'Follow'} ${t.school} ${t.mascot}, ${t.sport}, ${t.category}`);
             button.addEventListener('click', () => { t.followed = !t.followed; persist(); render(); });
             card.append(title, detail, place, button);
-            const club=STARTER_CLUBS.find(seed=>seed.id===t.id);
-            if(club){const source=document.createElement('a');source.href=club.source;source.target='_blank';source.rel='noopener noreferrer';source.className='block text-xs text-slate-400 underline';source.textContent='Official club website · discovery listing';card.append(source);}
+            const club=STARTER_TEAMS.find(seed=>seed.id===t.id);
+            if(club){const source=document.createElement('a');source.href=club.source;source.target='_blank';source.rel='noopener noreferrer';source.className='block text-xs text-slate-400 underline';source.textContent='Official team website · discovery listing';card.append(source);}
             list.append(card);
         });
     }
@@ -108,6 +117,72 @@
     search.addEventListener('input', render);
     document.getElementById('futbol-browse').addEventListener('click',()=>{sport.value='Soccer';level.value='';area.value='';following.checked=false;search.value='';render();document.getElementById('teams-heading').scrollIntoView({behavior:'smooth'});});
     document.getElementById('futbol-add-team').addEventListener('click',()=>{form.elements.sport.value='Soccer';form.elements.sport.dispatchEvent(new Event('change'));form.closest('details').open=true;form.scrollIntoView({behavior:'smooth'});form.elements.school.focus();});
+    const picker = document.getElementById('sport-team-picker');
+    const choice = document.getElementById('sport-team-choice');
+    const pickerStatus = document.getElementById('sport-picker-status');
+    const customName = document.getElementById('sport-custom-name');
+    const navButtons = [...document.querySelectorAll('[data-sport-nav]')];
+    const levelButtons = [...document.querySelectorAll('[data-picker-level]')];
+    let pickedSport = 'Football', pickedLevel = 'High School', activeNav = null;
+    function selectedSport() { return pickedSport === 'Other' ? customName.value.trim() : pickedSport; }
+    function matches(t) { return t.level === pickedLevel && t.sport.toLocaleLowerCase() === selectedSport().toLocaleLowerCase(); }
+    function updatePicker() {
+        const prior = choice.value;
+        const matchesList = teams.filter(matches);
+        choice.replaceChildren(new Option(matchesList.length ? 'Choose a team' : 'No teams listed yet — write in your team', ''));
+        matchesList.sort((a,b)=>a.school.localeCompare(b.school)).forEach(t=>choice.add(new Option(`${t.school} ${t.mascot} · ${t.city}, ${t.region}`.trim(),t.id)));
+        choice.value = matchesList.some(t=>t.id===prior) ? prior : '';
+        document.getElementById('sport-team-follow').disabled = !choice.value;
+        pickerStatus.textContent = `${matchesList.length} ${pickedLevel} team${matchesList.length===1?'':'s'} available. Missing your team? Write it in below.`;
+    }
+    function filterPicker() {
+        sportFilters();
+        const value = selectedSport();
+        if (value && ![...sport.options].some(o=>o.value===value)) sport.add(option(value));
+        sport.value=value;
+        level.value=pickedLevel;area.value='';search.value='';following.checked=false;
+        levelButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.pickerLevel===pickedLevel)));
+        render();
+    }
+    function closePicker(focus=true) {
+        picker.hidden=true;
+        navButtons.forEach(button=>button.setAttribute('aria-expanded','false'));
+        if(focus) activeNav?.focus();
+    }
+    navButtons.forEach(button=>button.addEventListener('click',()=>{
+        if(activeNav===button && !picker.hidden){closePicker();return;}
+        activeNav=button;pickedSport=button.dataset.sportNav;pickedLevel='High School';picker.hidden=false;
+        navButtons.forEach(b=>b.setAttribute('aria-expanded',String(b===button)));
+        document.getElementById('sport-picker-heading').textContent=`${button.textContent} — choose your team`;
+        document.getElementById('sport-custom-label').hidden=pickedSport!=='Other';
+        document.getElementById('sport-picker-language').hidden=pickedSport!=='Soccer';
+        filterPicker();
+        (pickedSport==='Other'?customName:levelButtons[0]).focus();
+    }));
+    levelButtons.forEach(button=>button.addEventListener('click',()=>{pickedLevel=button.dataset.pickerLevel;filterPicker();}));
+    customName.addEventListener('input',filterPicker);
+    choice.addEventListener('change',()=>{document.getElementById('sport-team-follow').disabled=!choice.value;});
+    document.getElementById('sport-team-follow').addEventListener('click',()=>{
+        const team=teams.find(t=>t.id===choice.value && matches(t));if(!team)return;
+        team.followed=true;persist();render();pickerStatus.textContent=`Following ${team.school}. ${storageAvailable?'Saved on this device.':'Saving unavailable; followed for this visit.'}`;
+    });
+    document.getElementById('sport-team-write').addEventListener('click',()=>{
+        if(pickedSport==='Other' && !selectedSport()){pickerStatus.textContent='Enter your sport name first.';customName.focus();return;}
+        form.elements.level.value=pickedLevel;schoolFields();
+        const name=selectedSport();
+        const known=SPORTS.includes(name)&&name!=='Other';
+        form.elements.sport.value=known?name:'Other';form.elements.otherSport.value=known?'':name;
+        form.elements.sport.dispatchEvent(new Event('change'));
+        document.getElementById('team-write-in').open=true;
+        form.scrollIntoView({behavior:'smooth',block:'center'});form.elements.school.focus();
+    });
+    document.getElementById('sport-picker-close').addEventListener('click',()=>closePicker());
+    picker.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();closePicker();}});
+    document.getElementById('sport-picker-language').addEventListener('click',()=>{
+        document.getElementById('futbol').scrollIntoView({behavior:'smooth'});
+        if(document.getElementById('futbol-languages').hidden) document.getElementById('futbol-language-toggle').click();
+        document.getElementById('futbol-language').focus();
+    });
     schoolFields();
     sportFilters();
     render();
