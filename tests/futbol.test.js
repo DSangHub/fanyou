@@ -32,7 +32,7 @@ test('Futbol team directory lists professional starter clubs, filters regions, a
  for(const select of document.querySelectorAll('select')){Object.defineProperty(select,'value',{get(){return this._value??this.querySelector('option')?.getAttribute('value')??this.querySelector('option')?.textContent??'';},set(value){this._value=value;}});select.add=o=>select.append(o);}
  function Option(label,value){const el=document.createElement('option');el.textContent=label;el.setAttribute('value',value);return el;}
  vm.runInNewContext(script,{document,window,Event:window.Event,Option,crypto:{randomUUID:()=>`new-${Math.random()}`},localStorage:{getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)}});
- assert.equal(document.querySelectorAll('#team-list article').length,5);
+ assert.equal(document.querySelectorAll('#team-list article').length,10);
  const area=document.getElementById('team-area-filter');area.value='South America';area.dispatchEvent(new window.Event('change'));assert.equal(document.querySelectorAll('#team-list article').length,2);
  for(const level of ['School','College','Professional']){
   const set=(k,v)=>form.elements[k].value=v;set('school',`${level} Futbol Team`);set('mascot','');set('level',level);form.elements.level.dispatchEvent(new window.Event('change'));set('sport','Soccer');set('city','Test City');set('region','Argentina');set('area','South America');form.dispatchEvent(new window.Event('submit',{cancelable:true}));
