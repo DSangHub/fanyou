@@ -32,7 +32,7 @@ export async function dispatch(route,req,body){
   return {scores:await db('fanyou_profile_scores?points_enabled=eq.true&select=*&order=points.desc,display_name.asc&limit=100')};
  }
  if(route==='profiles'&&req.method==='GET'){
-  const rows=await db('fanyou_profiles?verified=eq.true&moderation_status=eq.approved&role=in.(player,coach,manager)&select=id,display_name,role,school,sport,bio&order=display_name&limit=100');
+  const rows=await db('fanyou_profiles?verified=eq.true&moderation_status=eq.approved&role=in.(player,coach,manager)&select=id,display_name,role,school,sport,position,bio&order=display_name&limit=100');
   const access=rows.length?await db(`fanyou_subscriptions?user_id=in.(${rows.map(p=>id(p.id)).join(',')})&tier=eq.premier&status=eq.active&paid_through=gt.${encodeURIComponent(new Date().toISOString())}&select=user_id`):[];
   const premier=new Set(access.map(s=>s.user_id));const scores=rows.length?await db(`fanyou_profile_scores?profile_id=in.(${rows.map(p=>p.id).join(',')})&select=profile_id,points_enabled,points,rating_count,average_stars`):[];
   return {profiles:rows.map(p=>({...p,premier:premier.has(p.id),score:scores.find(s=>s.profile_id===p.id)||null}))};
@@ -60,12 +60,13 @@ export async function dispatch(route,req,body){
  if(route==='profile'&&req.method==='POST'){
   const role=body.role;if(!['fan','player','coach','manager'].includes(role))throw new HttpError(400,'Select Fan, Player, Coach, or Manager.');
   const display_name=text(body.display_name,2,80);
-  const school=role==='fan'?'':text(body.school,2,100),sport=role==='fan'?'':text(body.sport,2,60),bio=role==='fan'?'':text(body.bio,5,600);
+  const school=role==='fan'?'':text(body.school,2,100),sport=role==='fan'?'':text(body.sport,2,60),bio=role==='fan'?'':role==='player'&&!body.bio?.trim()?'':text(body.bio,5,600);
+  const position=role==='player'?text(body.position,2,80):'';
   const previous=await ownProfile(user.id);
   if(previous&&previous.role!==role)throw new HttpError(409,'Ask an administrator to change your profile role.');
-  await screen([display_name,school,sport,bio].join('\n'),(await subscription(user.id)).premier);
+  await screen([display_name,school,sport,position,bio].join('\n'),(await subscription(user.id)).premier);
   // Fan names remain private unless they opt into the public points table. Claimed Player/Coach/Manager identities require human verification.
-  const profile={id:user.id,display_name,role,school,sport,bio,verified:false,moderation_status:role==='fan'&&!previous?.points_enabled?'approved':'pending'};
+  const profile={id:user.id,display_name,role,school,sport,position,bio,verified:false,moderation_status:role==='fan'&&!previous?.points_enabled?'approved':'pending'};
   await db('fanyou_profiles?on_conflict=id',{method:'POST',body:profile,prefer:'resolution=merge-duplicates,return=minimal'});
   return {profile};
  }
@@ -106,7 +107,7 @@ export async function dispatch(route,req,body){
   if(!tables[type]||!['approved','rejected'].includes(decision))throw new HttpError(400,'Invalid moderation decision.');
   const record=(await db(`${tables[type]}?id=eq.${contentId}&select=*`))[0];if(!record)throw new HttpError(404,'Record not found.');
   if(decision==='approved'){
-   const content=type==='profile'?[record.display_name,record.school,record.sport,record.bio].join('\n'):record.body;
+   const content=type==='profile'?[record.display_name,record.school,record.sport,record.position||'',record.bio].join('\n'):record.body;
    basicCheck(content);
    const recipient=type==='suggestion'?record.recipient_id:record.author_id||record.id;
    if((await subscription(recipient)).premier){const check=await screen(content,true);if(check.status!=='approved')throw new HttpError(503,'OpenAI screening must succeed before Premier content can be approved.');}

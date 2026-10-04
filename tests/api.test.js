@@ -18,3 +18,21 @@ test('Fans joining the public points table require display-name review',async()=
  await dispatch('points-settings',{method:'POST',headers:{authorization:'Bearer fake.jwt'}},{enabled:false});assert.deepEqual(changed,{points_enabled:false,moderation_status:'approved'});
  }finally{global.fetch=originalFetch;names.forEach((name,i)=>{if(previous[i]===undefined)delete process.env[name];else process.env[name]=previous[i];});}
 });
+test('Player profiles require Position and edits clear verification; optional bio needs no extra field',async()=>{
+ const priorFetch=global.fetch,names=['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SERVICE_ROLE_KEY'],prior=names.map(n=>process.env[n]);let saved;
+ try{
+ process.env.SUPABASE_URL='https://example.supabase.co';process.env.SUPABASE_PUBLISHABLE_KEY='test';process.env.SUPABASE_SERVICE_ROLE_KEY='test';
+ global.fetch=async(url,options={})=>{
+  if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'11111111-1111-4111-8111-111111111111',email_confirmed_at:'2026-10-01',is_anonymous:false})};
+  if(options.method==='POST'){saved=JSON.parse(options.body);return {ok:true,json:async()=>null};}
+  return {ok:true,json:async()=>url.includes('fanyou_profiles')?[{role:'player',verified:true,moderation_status:'approved'}]:[]};
+ };
+ const req={method:'POST',headers:{authorization:'Bearer token'}};
+ const fields={role:'player',display_name:'Alex Smith',school:'Test School',sport:'Football'};
+ await assert.rejects(dispatch('profile',req,fields),/required fields/);
+ await assert.rejects(dispatch('profile',req,{...fields,position:'x'.repeat(81)}));
+ const response=await dispatch('profile',req,{...fields,position:'Quarterback',verified:true,moderation_status:'approved'});
+ assert.equal(response.profile.position,'Quarterback');assert.equal(saved.bio,'');assert.equal(saved.verified,false);assert.equal(saved.moderation_status,'pending');
+ await assert.rejects(dispatch('profile',req,{...fields,position:'https://spam.example'}),/links/);
+ }finally{global.fetch=priorFetch;names.forEach((n,i)=>{if(prior[i]===undefined)delete process.env[n];else process.env[n]=prior[i]});}
+});
