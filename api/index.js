@@ -70,12 +70,13 @@ export async function dispatch(route,req,body){
   await db('fanyou_profiles?on_conflict=id',{method:'POST',body:profile,prefer:'resolution=merge-duplicates,return=minimal'});
   return {profile};
  }
- if(route==='suggestions'&&req.method==='POST'){
+ if(['suggestions','game-comments'].includes(route)&&req.method==='POST'){
+  const gameComment=route==='game-comments';
   const author=await ownProfile(user.id);if(!author||author.moderation_status!=='approved')throw new HttpError(403,'Create your profile and wait for verification if required.');
   const recipient=id(body.recipient_id);
-  const target=(await db(`fanyou_profiles?id=eq.${recipient}&verified=eq.true&moderation_status=eq.approved&role=in.(player,coach,manager)&select=id`))[0];
-  if(!target)throw new HttpError(400,'Choose a verified Player, Coach, or Manager.');
-  const message=text(body.body,5,1500);
+  const target=(await db(`fanyou_profiles?id=eq.${recipient}&verified=eq.true&moderation_status=eq.approved&${gameComment?'role=eq.player':'role=in.(player,coach,manager)'}&select=id`))[0];
+  if(!target)throw new HttpError(400,gameComment?'Tag a verified Player for Q&A.':'Choose a verified Player, Coach, or Manager.');
+  const message=gameComment?`Game: ${text(body.game,2,120)}\nOpponent: ${text(body.opponent,2,100)}\nComment: ${text(body.comment,5,1000)}`:text(body.body,5,1500);
   const moderation=await screen(message,(await subscription(recipient)).premier);
   const result=await db('rpc/fanyou_submit_suggestion',{method:'POST',body:{p_author:user.id,p_recipient:recipient,p_body:message,p_status:moderation.status,p_screening:moderation.screening}});
   return {suggestion:Array.isArray(result)?result[0]:result};

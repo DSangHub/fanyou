@@ -13,11 +13,11 @@ async function boot(ready,{paid=false,withReply=false}={}){
   if(route==='config')data={ready,billing:false,moderation:false};
   if(route==='points-table')data={scores:[]};
   if(route==='rate-reply'){suggestions[0].replies[0].stars=body.stars;data={rating:{stars:body.stars}};}
-  if(route==='profiles')data={profiles:[{id:coach,display_name:'<img src=x onerror=alert(1)>',role:'coach',school:'Test School',sport:'Soccer',bio:'Coaching soccer.',premier:false}]};
+  if(route==='profiles')data={profiles:[{id:coach,display_name:'<img src=x onerror=alert(1)>',role:'player',school:'Test School',sport:'Soccer',bio:'Coaching soccer.',premier:false}]};
   if(route==='login')data={access_token:'fake.jwt',refresh_token:'refresh-token'};
   if(route==='profile'){profile={id:uid,...body,moderation_status:body.role==='fan'?'approved':'pending',verified:false};data={profile};}
   if(route==='account')data={profile,unlimited:paid,premier:false,used:suggestions.length,remaining:10-suggestions.length,month:'2026-10',admin:false};
-  if(route==='suggestions'&&options.method==='POST'){const suggestion={id:coach,author_id:uid,recipient_id:body.recipient_id,body:body.body,status:withReply?'approved':'pending',created_at:'2026-10-01T00:00:00Z',replies:withReply?[{id:'33333333-3333-4333-8333-333333333333',author_id:coach,body:'Good suggestion',status:'approved',stars:null}]:[]};suggestions.push(suggestion);data={suggestion};}
+  if(['suggestions','game-comments'].includes(route)&&options.method==='POST'){if(route==='game-comments')body.body=`Game: ${body.game}\nOpponent: ${body.opponent}\nComment: ${body.comment}`;const suggestion={id:coach,author_id:uid,recipient_id:body.recipient_id,body:body.body,status:withReply?'approved':'pending',created_at:'2026-10-01T00:00:00Z',replies:withReply?[{id:'33333333-3333-4333-8333-333333333333',author_id:coach,body:'Good suggestion',status:'approved',stars:null}]:[]};suggestions.push(suggestion);data={suggestion};}
   if(route==='suggestions'&&!options.body)data={suggestions,user_id:uid};
   if(route==='logout')data={signed_out:true};
   return {ok:true,status:200,json:async()=>data};
@@ -52,4 +52,14 @@ test('paid Fans can choose 1–5 stars on received replies; free Fans do not see
    assert.match(document.getElementById('community-inbox').textContent,/4 of 5 stars awarded/);
   }
  }
+});
+test('Game Tracker submits four fields and shows moderated game Q&A in the existing inbox',async()=>{
+ const {document,submit,calls}=await boot(true);
+ const login=document.getElementById('community-auth-form');login.elements.email.value='test@example.org';login.elements.password.value='examplePassword';submit(login);await flush();
+ const profile=document.getElementById('community-profile-form');profile.elements.display_name.value='Fan Name';profile.elements.role.value='fan';submit(profile);await flush();
+ const form=document.getElementById('community-game-form');assert.match(document.getElementById('community-game-player').textContent,/Test School/);
+ form.elements.game.value='Friday football';form.elements.opponent.value='Visiting team';form.elements.comment.value='<img src=x> How did you prepare?';form.elements.recipient_id.value='22222222-2222-4222-8222-222222222222';submit(form);await flush();
+ assert.equal(calls.filter(c=>c.route==='game-comments').length,1);assert.equal(calls.find(c=>c.route==='game-comments').body.game,'Friday football');
+ assert.match(document.getElementById('community-inbox').textContent,/Game: Friday football/);assert.match(document.getElementById('community-inbox').textContent,/Opponent: Visiting team/);assert.equal(document.querySelectorAll('#community-inbox img').length,0);
+ assert.match(document.getElementById('community-status').textContent,/Game comment held/);assert.match(document.getElementById('community-usage').textContent,/9 of 10/);assert.equal(form.elements.comment.value,'');
 });

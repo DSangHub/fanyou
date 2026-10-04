@@ -107,13 +107,23 @@
                         <p id="community-points-total" class="text-sm text-indigo-300"></p>
                         <button id="community-points-save" type="button" class="rounded-lg bg-indigo-600 px-3 py-2 text-sm">Save points preference</button>
                     </div>
+                    <form id="community-game-form" class="rounded-xl bg-slate-950 border border-emerald-800 p-4 space-y-3">
+                        <h3 class="text-xl font-bold">Game Tracker</h3>
+                        <p class="text-sm text-slate-400">Comment on a game and tag a verified Player for Q&amp;A. Comments and replies are moderated and visible to you and the tagged Player. A reply is not guaranteed.</p>
+                        <label class="block text-sm">Game<input name="game" required minlength="2" maxlength="120" placeholder="e.g. Friday night football · October 9" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                        <label class="block text-sm">Opponent<input name="opponent" required minlength="2" maxlength="100" placeholder="Opposing team" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                        <label class="block text-sm">Comment<textarea name="comment" required minlength="5" maxlength="1000" rows="3" placeholder="Your comment or question about the game" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
+                        <label class="block text-sm">Tag a Player for Q&amp;A<select name="recipient_id" id="community-game-player" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified Player</option></select></label>
+                        <p class="text-xs text-slate-400">Uses your Suggestion Box allowance: 10 free submissions per month, shared with other suggestions. Paid Fans have unlimited submissions.</p>
+                        <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2">Submit game comment for moderation</button>
+                    </form>
                     <form id="community-suggestion-form" class="rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-3">
                         <h3 class="font-bold">Send a fan suggestion</h3>
                         <label class="block text-sm">Player, Coach, or Manager<select name="recipient_id" id="community-recipient" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="">Choose a verified profile</option></select></label>
                         <label class="block text-sm">Your suggestion<textarea name="body" required minlength="5" maxlength="1500" rows="4" placeholder="Keep it constructive and respectful." class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
                         <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2">Submit for moderation</button>
                     </form>
-                    <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
+                    <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your game comments, suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
                 </div>
                 <div><h3 class="font-bold">Verified Players, Coaches &amp; Managers</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
                 <details id="community-points-table" class="border-t border-slate-700 pt-4">
