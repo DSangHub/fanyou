@@ -83,3 +83,7 @@ The top bar offers Football (American), Baseball, Basketball, Hockey (Ice Hockey
 ## Player profile position
 
 Apply `database/player-position.sql` after the existing database scripts. Players provide Name, School / team, Sport, and Position; About you is optional. Position is screened with the other profile fields, visible in moderation reviews and approved directory cards. Saving a new or edited Player profile clears verification and returns it to pending review. Existing profiles are preserved with an empty Position until their next edit; users cannot self-verify.
+
+## Game Tracker
+
+Signed-in users can enter Game, Opponent and Comment and tag one verified Player for Q&A. The server validates the recipient as an approved verified Player, validates lengths, and screens the entire game/opponent/comment text. The fields are stored as a formatted suggestion body through the existing atomic quota RPC, sharing the 10 free monthly submissions and paid unlimited entitlement. The author and tagged Player use the existing private inbox and moderated reply workflow, with optional points/stars under existing rules. Pending comments are not delivered before review. Tagging does not promise a response or send external notifications. This is a comment tracker, with no live scores or schedules integration.

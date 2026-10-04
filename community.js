@@ -62,6 +62,11 @@
    directory.append(card);select.add(new Option(`${p.display_name} — ${p.role}, ${p.school}, ${p.sport}`,p.id));
   }
   if(profiles.some(p=>p.id===selected))select.value=selected;
+  const tagged=$('community-game-player'),previous=tagged.value;
+  tagged.replaceChildren(new Option('Choose a verified Player',''));
+  profiles.filter(p=>p.role==='player').forEach(p=>tagged.add(new Option(`${p.display_name} — ${p.school}, ${p.sport}${p.position?`, ${p.position}`:''}`,p.id)));
+  if(profiles.some(p=>p.id===previous&&p.role==='player'))tagged.value=previous;
+
  }
  async function loadInbox(){
   const {suggestions,user_id}=await api('suggestions');const inbox=$('community-inbox');inbox.replaceChildren();
@@ -120,6 +125,11 @@
  }));
  profileForm.elements.role.addEventListener('change',profileFields);
  profileForm.addEventListener('submit',e=>{e.preventDefault();action(e.submitter,async()=>{const body={};for(const name of ['display_name','role','school','sport','position','bio'])body[name]=profileForm.elements[name].value;const data=await api('profile',body);await loadAccount();await loadDirectory();message(data.profile.role==='fan'?'Fan profile saved.':'Profile submitted for moderation and identity verification.');});});
+ $('community-game-form').addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget;action(e.submitter,async()=>{
+  const payload={};for(const name of ['game','opponent','comment','recipient_id'])payload[name]=form.elements[name].value;
+  const data=await api('game-comments',payload);form.elements.comment.value='';await loadAccount();
+  message(data.suggestion.status==='approved'?'Game comment delivered to the tagged Player after screening.':'Game comment held for moderator review before delivery to the tagged Player.');
+ });});
  $('community-suggestion-form').addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget;action(e.submitter,async()=>{const data=await api('suggestions',{recipient_id:form.elements.recipient_id.value,body:form.elements.body.value});form.elements.body.value='';await loadAccount();message(data.suggestion.status==='approved'?'Suggestion delivered after OpenAI screening.':'Suggestion held for moderator review.');});});
  document.querySelectorAll('[data-buy]').forEach(button=>button.addEventListener('click',()=>action(button,async()=>{if(!session){message('Create an account or sign in before subscribing.');$('community-auth').scrollIntoView({behavior:'smooth'});return;}const [tier,interval]=button.dataset.buy.split(':');const {url}=await api('checkout',{tier,interval});if(new URL(url).hostname!=='checkout.stripe.com')throw new Error('Unexpected checkout address.');window.location.assign(url);}))); 
  $('community-billing').addEventListener('click',e=>action(e.currentTarget,async()=>{const {url}=await api('portal',{});if(new URL(url).hostname!=='billing.stripe.com')throw new Error('Unexpected billing address.');window.location.assign(url);}));

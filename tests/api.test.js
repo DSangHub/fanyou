@@ -36,3 +36,20 @@ test('Player profiles require Position and edits clear verification; optional bi
  await assert.rejects(dispatch('profile',req,{...fields,position:'https://spam.example'}),/links/);
  }finally{global.fetch=priorFetch;names.forEach((n,i)=>{if(prior[i]===undefined)delete process.env[n];else process.env[n]=prior[i]});}
 });
+test('Game Tracker validates and screens all fields, tags only verified Players and uses the shared quota RPC',async()=>{
+ const originalFetch=global.fetch,names=['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY','SUPABASE_SERVICE_ROLE_KEY'],prior=names.map(n=>process.env[n]);let rpc,available=true;
+ try{
+ process.env.SUPABASE_URL='https://example.supabase.co';process.env.SUPABASE_PUBLISHABLE_KEY='test';process.env.SUPABASE_SERVICE_ROLE_KEY='test';
+ global.fetch=async(url,options={})=>{
+  if(url.includes('/auth/v1/user'))return {ok:true,json:async()=>({id:'11111111-1111-4111-8111-111111111111',email_confirmed_at:'2026-10-01',is_anonymous:false})};
+  if(url.includes('rpc/fanyou_submit_suggestion')){rpc=JSON.parse(options.body);return {ok:true,json:async()=>[{id:'saved',body:rpc.p_body,status:rpc.p_status}]};}
+  if(url.includes('verified=eq.true')){assert.match(url,/role=eq.player/);return {ok:true,json:async()=>available?[{id:'22222222-2222-4222-8222-222222222222'}]:[]};}
+  return {ok:true,json:async()=>url.includes('fanyou_profiles')?[{role:'fan',moderation_status:'approved'}]:[]};
+ };
+ const req={method:'POST',headers:{authorization:'Bearer token'}},body={game:'Friday football',opponent:'Visiting team',comment:'How did you prepare for the game?',recipient_id:'22222222-2222-4222-8222-222222222222'};
+ const result=await dispatch('game-comments',req,body);assert.equal(result.suggestion.status,'pending');assert.equal(rpc.p_recipient,body.recipient_id);assert.equal(rpc.p_body,`Game: ${body.game}\nOpponent: ${body.opponent}\nComment: ${body.comment}`);
+ for(const field of ['game','opponent','comment'])await assert.rejects(dispatch('game-comments',req,{...body,[field]:''}));
+ await assert.rejects(dispatch('game-comments',req,{...body,game:'https://spam.example'}),/links/);
+ available=false;await assert.rejects(dispatch('game-comments',req,body),/verified Player/);
+ }finally{global.fetch=originalFetch;names.forEach((n,i)=>{if(prior[i]===undefined)delete process.env[n];else process.env[n]=prior[i]});}
+});
