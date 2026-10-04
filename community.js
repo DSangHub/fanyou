@@ -27,14 +27,17 @@
  function profileFields(){
   const active=profileForm.elements.role.value!=='fan';
   profileForm.querySelectorAll('[data-profile-field]').forEach(el=>el.classList.toggle('hidden',!active));
-  for(const name of ['school','sport','bio']){profileForm.elements[name].required=active;profileForm.elements[name].disabled=!active;}
+  const player=profileForm.elements.role.value==='player';
+  profileForm.querySelectorAll('[data-player-field]').forEach(el=>el.classList.toggle('hidden',!player));
+  profileForm.elements.position.required=player;profileForm.elements.position.disabled=!player;
+  for(const name of ['school','sport','bio']){profileForm.elements[name].required=active && (name!=='bio'||!player);profileForm.elements[name].disabled=!active;}
  }
  async function loadAccount(){
   if(!session){authUI();return;}
   current=await api('account');authUI();
   $('community-usage').textContent=current.unlimited?`${current.premier?'Premier':'Unlimited Fan'} · Unlimited suggestions · ${current.used} submitted this month`:`Free Fan · ${current.remaining} of 10 suggestions remaining for ${current.month}`;
   const p=current.profile;
-  if(p){for(const name of ['display_name','role','school','sport','bio'])profileForm.elements[name].value=p[name]||'';}
+  if(p){for(const name of ['display_name','role','school','sport','position','bio'])profileForm.elements[name].value=p[name]||'';}
   profileForm.elements.role.disabled=Boolean(p);
   profileFields();
   $('community-profile-status').textContent=p?`${p.role} profile · ${p.moderation_status}${p.verified?' · Identity verified':''}`:'Save a Fan profile to start, or submit your Player / Coach / Manager profile for verification.';
@@ -53,7 +56,7 @@
   for(const p of profiles){
    const card=document.createElement('article');card.className='bg-slate-950 border border-slate-700 rounded-xl p-4 space-y-2 break-words';
    const title=document.createElement('h4');title.className='font-bold';title.textContent=p.display_name;
-   card.append(title,paragraph(`${p.role==='player'?'Player':p.role==='manager'?'Manager':'Coach'} · ${p.school} · ${p.sport}`),paragraph(p.bio),paragraph(p.premier?'Premier · OpenAI content screening':'Basic · Moderator review','text-xs text-indigo-300'));
+   card.append(title,paragraph(`${p.role==='player'?'Player':p.role==='manager'?'Manager':'Coach'} · ${p.school} · ${p.sport}`),paragraph(p.bio),paragraph(p.role==='player'?`Position: ${p.position||'Not provided'} · Verified`:'Identity verified','text-xs text-emerald-300'),paragraph(p.premier?'Premier · OpenAI content screening':'Basic · Moderator review','text-xs text-indigo-300'));
    if(p.score?.rating_count)card.append(paragraph(`★ ${p.score.average_stars}/5 · ${p.score.rating_count} fan ratings`,'text-sm text-amber-300'));
    if(p.score?.points_enabled)card.append(paragraph(`${p.score.points} interaction points`,'text-sm text-indigo-300'));
    directory.append(card);select.add(new Option(`${p.display_name} — ${p.role}, ${p.school}, ${p.sport}`,p.id));
@@ -99,7 +102,7 @@
   const queue=await api('review-queue');const list=$('community-review-list');list.replaceChildren();
   for(const [key,type] of [['profiles','profile'],['suggestions','suggestion'],['replies','reply']])for(const item of queue[key]){
    const card=document.createElement('article');card.className='rounded-xl bg-slate-950 border border-slate-700 p-4 space-y-2 break-words';
-   card.append(paragraph(`${type} · ${item.id}`,'text-xs text-indigo-300'),paragraph(type==='profile'?`${item.display_name} · ${item.role} · ${item.school} · ${item.sport}\n${item.bio}`:item.body,'text-sm text-slate-200 whitespace-pre-wrap'));
+   card.append(paragraph(`${type} · ${item.id}`,'text-xs text-indigo-300'),paragraph(type==='profile'?`${item.display_name} · ${item.role} · ${item.school} · ${item.sport}${item.position?` · Position: ${item.position}`:''}\n${item.bio}`:item.body,'text-sm text-slate-200 whitespace-pre-wrap'));
    const verify=document.createElement('input');verify.type='checkbox';
    if(type==='profile'&&item.role!=='fan'){const label=document.createElement('label');label.className='flex gap-2 items-center text-sm';label.append(verify,document.createTextNode('I independently verified this person’s identity and school affiliation.'));card.append(label);}
    for(const decision of ['approved','rejected']){const button=document.createElement('button');button.type='button';button.textContent=decision==='approved'?'Approve':'Reject';button.className='rounded-lg bg-slate-700 px-3 py-2 text-sm mr-2';button.addEventListener('click',()=>action(button,async()=>{await api('review',{type,id:item.id,decision,verify:verify.checked});message('Moderation decision saved.');await loadReviews();await loadDirectory();await loadPoints();}));card.append(button);}
@@ -116,7 +119,7 @@
   profileForm.elements.role.value=role;profileFields();$('community-profile-details').open=true;$('community-profile-details').scrollIntoView({behavior:'smooth'});
  }));
  profileForm.elements.role.addEventListener('change',profileFields);
- profileForm.addEventListener('submit',e=>{e.preventDefault();action(e.submitter,async()=>{const body={};for(const name of ['display_name','role','school','sport','bio'])body[name]=profileForm.elements[name].value;const data=await api('profile',body);await loadAccount();await loadDirectory();message(data.profile.role==='fan'?'Fan profile saved.':'Profile submitted for moderation and identity verification.');});});
+ profileForm.addEventListener('submit',e=>{e.preventDefault();action(e.submitter,async()=>{const body={};for(const name of ['display_name','role','school','sport','position','bio'])body[name]=profileForm.elements[name].value;const data=await api('profile',body);await loadAccount();await loadDirectory();message(data.profile.role==='fan'?'Fan profile saved.':'Profile submitted for moderation and identity verification.');});});
  $('community-suggestion-form').addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget;action(e.submitter,async()=>{const data=await api('suggestions',{recipient_id:form.elements.recipient_id.value,body:form.elements.body.value});form.elements.body.value='';await loadAccount();message(data.suggestion.status==='approved'?'Suggestion delivered after OpenAI screening.':'Suggestion held for moderator review.');});});
  document.querySelectorAll('[data-buy]').forEach(button=>button.addEventListener('click',()=>action(button,async()=>{if(!session){message('Create an account or sign in before subscribing.');$('community-auth').scrollIntoView({behavior:'smooth'});return;}const [tier,interval]=button.dataset.buy.split(':');const {url}=await api('checkout',{tier,interval});if(new URL(url).hostname!=='checkout.stripe.com')throw new Error('Unexpected checkout address.');window.location.assign(url);}))); 
  $('community-billing').addEventListener('click',e=>action(e.currentTarget,async()=>{const {url}=await api('portal',{});if(new URL(url).hostname!=='billing.stripe.com')throw new Error('Unexpected billing address.');window.location.assign(url);}));

@@ -79,3 +79,7 @@ The header says points **may be redeemed for tickets (conditions apply)**. This 
 ## Sports landing page
 
 The top bar offers Football (American), Baseball, Basketball, Hockey (Ice Hockey), Futbol/Football (Soccer), and Add your Sport. Each opens High School, College, and Professional team choices. Choose from the starter/device directory or write in a team, with sport and level carried into the form. Add your Sport accepts a custom sport name. There are nine starter listings with official team sources; the directory is deliberately limited, and missing schools/teams can be written in. Following and team additions remain local to this device. Futbol language choices remain accessible. The old basketball game simulation, fantasy chatter, mock subscription tiers, pretend points, polls, leaderboard, rewards, and technical architecture view have been removed; real moderated suggestions and interaction points remain.
+
+## Player profile position
+
+Apply `database/player-position.sql` after the existing database scripts. Players provide Name, School / team, Sport, and Position; About you is optional. Position is screened with the other profile fields, visible in moderation reviews and approved directory cards. Saving a new or edited Player profile clears verification and returns it to pending review. Existing profiles are preserved with an empty Position until their next edit; users cannot self-verify.

@@ -89,11 +89,13 @@
                         <summary class="font-bold cursor-pointer">Your Fan, Player, Coach, or Manager profile</summary>
                         <p id="community-profile-status" class="text-sm text-slate-400 mt-2"></p>
                         <form id="community-profile-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-                            <label class="text-sm">Display name<input name="display_name" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                            <label class="text-sm">Name<input name="display_name" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
                             <label class="text-sm">Profile type<select name="role" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="fan">Fan</option><option value="player">Player</option><option value="coach">Coach</option><option value="manager">Manager</option></select></label>
                             <label data-profile-field class="text-sm hidden">School / team<input name="school" maxlength="100" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
                             <label data-profile-field class="text-sm hidden">Sport<input name="sport" maxlength="60" placeholder="Any sport" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
-                            <label data-profile-field class="text-sm hidden sm:col-span-2">About you<textarea name="bio" maxlength="600" rows="3" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
+                            <label data-player-field class="text-sm hidden">Position<input name="position" maxlength="80" placeholder="e.g. Quarterback, Goalkeeper, Forward" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></label>
+                            <p data-player-field class="text-sm text-amber-300 hidden sm:col-span-2">Player profiles are subject to verification of your Name, School / team, Sport, and Position before appearing publicly or interacting.</p>
+                            <label data-profile-field class="text-sm hidden sm:col-span-2">About you (optional for Players)<textarea name="bio" maxlength="600" rows="3" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2"></textarea></label>
                             <p data-profile-field class="text-xs text-slate-400 hidden sm:col-span-2">Only create a profile for yourself. Player, Coach, and Manager profiles require independent verification. Profile edits require verification again. Do not include private information about yourself or minors.</p>
                             <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 sm:col-span-2">Save profile</button>
                         </form>
