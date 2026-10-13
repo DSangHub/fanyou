@@ -32,7 +32,19 @@
 </div></div>
 </header>
 <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+<div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
 <section class="py-4 space-y-3"><p class="text-sm font-semibold uppercase tracking-widest text-emerald-300">Every sport. Every level.</p><h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight">Your sport. Your team.<br>Your voice.</h1><p class="text-lg text-slate-300 max-w-2xl">Choose a sport above, find your High School, College, or Professional team, or write in your own. Connect with Players, Coaches, and Managers through moderated suggestions.</p></section>
+<aside id="player-investment" aria-labelledby="player-investment-heading" class="rounded-2xl border border-amber-500/60 bg-gradient-to-br from-amber-950 via-slate-900 to-slate-950 p-5 sm:p-6 space-y-4">
+    <p class="text-xs font-bold uppercase tracking-widest text-amber-300">Coming soon · Player funding</p>
+    <h2 id="player-investment-heading" class="text-3xl font-extrabold text-amber-200">Invest in your favorite player</h2>
+    <p class="text-xl font-semibold">Help them succeed in the Pros or in life.</p>
+    <p class="text-slate-200">Your contribution can help them, and you may earn from it under an approved funding agreement.</p>
+    <p class="text-sm text-slate-300">Follow their journey from High School to College and beyond. Players would propose how much funding they need and when and how they agree to repay it, including if they do not become professional athletes.</p>
+    <details class="text-sm border-t border-amber-700/50 pt-3"><summary class="font-semibold text-amber-200">Funding terms and availability</summary><p class="mt-2 text-slate-300">This is a proposed program. FanYou is not currently offering investments or loans or accepting player-funding contributions. Any future offer requires legal and eligibility review, verified participants, and a signed agreement defining repayment, fees, risks, and what happens if a player cannot pay. Earnings and repayment are not guaranteed. Additional protections and approvals are required for minors.</p></details>
+    <a href="#community-directory-heading" class="inline-block rounded-lg bg-amber-300 px-4 py-3 font-bold text-slate-950 hover:bg-amber-200">Explore verified Players</a>
+    <p class="text-xs text-amber-200">Funding is not yet available. No guaranteed returns.</p>
+</aside>
+</div>
             <section aria-labelledby="teams-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
                 <div>
                     <h2 id="teams-heading" class="text-2xl font-bold">School, College &amp; Professional Teams — All Sports</h2>
@@ -125,7 +137,7 @@
                     </form>
                     <div><div class="flex items-center justify-between gap-2"><h3 class="font-bold">Your game comments, suggestions &amp; replies</h3><button id="community-refresh" class="rounded-lg bg-slate-700 px-3 py-2 text-sm">Refresh</button></div><div id="community-inbox" class="space-y-3 mt-3"></div></div>
                 </div>
-                <div><h3 class="font-bold">Verified Players, Coaches &amp; Managers</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
+                <div><h3 id="community-directory-heading" class="font-bold">Verified Players, Coaches &amp; Managers</h3><p class="text-xs text-slate-400 mt-1">Basic profiles can interact after moderator approval. Premier profiles add OpenAI content screening.</p><div id="community-directory" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3"></div></div>
                 <details id="community-points-table" class="border-t border-slate-700 pt-4">
                     <summary class="font-bold cursor-pointer">Optional Interaction Points Table</summary>
                     <p class="text-xs text-slate-400 mt-2">10 points per approved interaction. Paid fans can optionally award 1–5 stars to replies they receive. Stars and interaction points are tracked separately.</p>
