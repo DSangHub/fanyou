@@ -1,3 +1,4 @@
+import {fantasyDispatch} from '../lib/fantasy.js';
 import {HttpError,text,id,screen,basicCheck} from '../lib/core.js';
 import {configured,db,auth,account,subscription,ownProfile} from '../lib/backend.js';
 import {checkout,portal,webhook,appUrl} from '../lib/billing.js';
@@ -20,7 +21,7 @@ async function authAction(route,body){
  return {access_token:data.access_token||null,refresh_token:data.refresh_token||null,expires_in:data.expires_in||null,confirmation_required:!data.access_token};
 }
 export async function dispatch(route,req,body){
- if(route==='config'&&req.method==='GET')return {ready:configured(),billing:configured()&&process.env.BILLING_ENABLED==='true'&&Boolean(process.env.STRIPE_SECRET_KEY&&process.env.STRIPE_WEBHOOK_SECRET),moderation:configured()&&Boolean(process.env.OPENAI_API_KEY)};
+ if(route==='config'&&req.method==='GET')return {ready:configured(),billing:configured()&&process.env.BILLING_ENABLED==='true'&&Boolean(process.env.STRIPE_SECRET_KEY&&process.env.STRIPE_WEBHOOK_SECRET),fantasy:configured()&&process.env.FANTASY_ENABLED==='true',moderation:configured()&&Boolean(process.env.OPENAI_API_KEY)};
  if(['login','signup'].includes(route)&&req.method==='POST')return authAction(route,body);
  if(route==='refresh'&&req.method==='POST'){
   if(!configured())throw new HttpError(503,'Accounts are awaiting activation.');
@@ -38,6 +39,7 @@ export async function dispatch(route,req,body){
   return {profiles:rows.map(p=>({...p,premier:premier.has(p.id),score:scores.find(s=>s.profile_id===p.id)||null}))};
  }
  const user=await auth(req);
+ if(route.startsWith('fantasy-'))return fantasyDispatch(route,req,body,user);
  if(route==='logout'&&req.method==='POST'){
   await fetch(`${process.env.SUPABASE_URL}/auth/v1/logout`,{method:'POST',headers:{apikey:process.env.SUPABASE_PUBLISHABLE_KEY,Authorization:req.headers.authorization},signal:AbortSignal.timeout(10000)});
   return {signed_out:true};

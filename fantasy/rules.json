@@ -1,0 +1,10 @@
+{
+  "version": "fanyou-free-v1",
+  "sports": {
+    "Football": {"passing_yards":0.04,"passing_touchdowns":4,"interceptions":-2,"rushing_yards":0.1,"rushing_touchdowns":6,"receiving_yards":0.1,"receiving_touchdowns":6,"receptions":1,"fumbles_lost":-2},
+    "Baseball": {"singles":1,"doubles":2,"triples":3,"home_runs":4,"runs":1,"runs_batted_in":1,"walks":1,"pitching_outs":1,"pitching_strikeouts":1,"earned_runs":-2},
+    "Basketball": {"points":1,"rebounds":1.2,"assists":1.5,"steals":3,"blocks":3,"turnovers":-1},
+    "Hockey": {"goals":3,"assists":2,"shots":0.5,"saves":0.2,"goals_allowed":-1},
+    "Futbol/Football": {"goals":5,"assists":3,"shots_on_target":1,"saves":1,"clean_sheets":5,"yellow_cards":-1,"red_cards":-3}
+  }
+}

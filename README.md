@@ -87,3 +87,39 @@ Apply `database/player-position.sql` after the existing database scripts. Player
 ## Game Tracker
 
 Signed-in users can enter Game, Opponent and Comment and tag one verified Player for Q&A. The server validates the recipient as an approved verified Player, validates lengths, and screens the entire game/opponent/comment text. The fields are stored as a formatted suggestion body through the existing atomic quota RPC, sharing the 10 free monthly submissions and paid unlimited entitlement. The author and tagged Player use the existing private inbox and moderated reply workflow, with optional points/stars under existing rules. Pending comments are not delivered before review. Tagging does not promise a response or send external notifications. This is a comment tracker, with no live scores or schedules integration.
+
+
+## Free fantasy leagues (13+)
+
+The existing Node.js API now supports free private fantasy leagues. The Python 3 scoring tool uses the same versioned rules as Node; Python runs locally or as a trusted batch job, not as a second public server. This avoids adding another authentication system or exposing database credentials to a Python client.
+
+### Enable
+
+1. Apply `database/fantasy.sql` once to the same Supabase project as FanYou. It adds six server-only RLS tables and a restricted security-invoker RPC. It does not alter player investments, Stripe, suggestion quotas, or existing points.
+2. Set `FANTASY_ENABLED=true` in the Node server environment after the schema exists. The default is disabled. Existing Supabase server credentials and confirmed email login are required.
+3. Run `npm ci`, `npm test`, `npm run build`, and `npm start` (Node 22 or newer). The static build contains the fantasy UI only; private backend and Python files are not copied to `public`.
+
+The Fantasy Leagues section first checks availability. When enabled, it presents a neutral date-of-birth form before any league action and blocks under-13 dates locally and on the server. DOB is discarded after calculating the private `13-17` or `18+` band; only the band, rule version and declaration timestamp are retained. This is **self-declared eligibility, not independent identity/age verification or a complete teen-privacy compliance solution**. No fantasy date of birth is added to public profiles or auth metadata. Existing account signup outside fantasy is unchanged. Do not enable an under-13 experience without a separate compliant design.
+
+### League flow
+
+Sign in through the existing account form, complete fantasy eligibility, then create or join by private invite UUID. Limits are five owned leagues and ten memberships per account, 2–20 teams per league, 1–10 players per roster and 200 players per pool. Only members see league records; only the commissioner receives the invite code in the detail response. Invite codes are not public directory listings. Use team nicknames rather than real names or contact details.
+
+The commissioner enters public professional-athlete names, teams and positions. This initial version has **no licensed/official sports data feed, verified athlete catalog, snake draft, trades, playoffs, automated fixtures or live scores**. Member picks are first-come; an athlete can belong to only one roster in that league. All rosters must be complete and at least two teams joined before the commissioner locks rosters and starts play. No picks or joins are allowed after starting. Closing permanently stops picks/imports. Locked picks ensure later roster edits cannot claim earlier scores.
+
+Commissioner-supplied names use the existing baseline content checks and render as text. No fantasy chat or direct messaging is included. Leagues are free with no wagers, entry fees or prizes. Fantasy standings points cannot be redeemed for money, tickets, rewards or investments and do not enter the FanYou interaction-points ledger. Existing financial-funding copy remains a separate unavailable proposal.
+
+### Python scoring
+
+Scoring rules are in `fantasy/rules.json`, version `fanyou-free-v1`. All recorded periods sum equally. Football uses passing/rushing/receiving stats; baseball pitching uses **outs**, not decimal innings. Stats must be supported nonnegative whole numbers. The commissioner is responsible for accuracy and lawful use of source data.
+
+1. Copy `fantasy/example-stats.json`; replace example league and athlete IDs with IDs displayed to the commissioner in the league UI. Set the correct sport, period (`week-1`, for example) and actual stats.
+2. Run `python3 python/fantasy_scores.py your-stats.json --out scored.json`. No Python packages or API keys are needed.
+3. Paste `scored.json` into the active league's Publish period statistics form. Node validates commissioner access and recalculates every score using the league's fixed sport/rule version; modified totals are rejected.
+4. Reimport a corrected player/period record to replace it. The database's composite key prevents duplicate imports from inflating totals. Existing records not present in the import remain unchanged; to zero an erroneous record, submit supported zero statistics for that player/period.
+
+The commissioner controls statistics; these are not certified sports results. There is no public collection/payment endpoint, and the Python tool cannot write the database directly. Account deletion through Supabase Auth cascades the eligibility row, memberships and owned leagues. Runtime access to the previously configured FanYou Supabase project was unavailable during this change, so the script is provided and tested locally; live schema application and enablement remain pending.
+
+### Validation
+
+`npm test` includes boundary-date checks, Node/Python scoring parity, API activation/age/scoring validation, private league access, roster/membership limits, duplicate picks, locked rosters, commissioner-only publishing, score correction and direct-browser privilege denial. A DOM → Node API → local PostgreSQL integration test creates two teams, picks rosters, publishes stats and verifies standings and sign-out cleanup. It is not a real-browser or production Supabase test.

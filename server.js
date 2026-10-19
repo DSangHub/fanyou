@@ -1,7 +1,7 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import handler from './api/index.js';
-const assets={'/':'index.html','/index.html':'index.html','/teams.js':'teams.js','/community.js':'community.js'};
+const assets={'/':'index.html','/index.html':'index.html','/teams.js':'teams.js','/community.js':'community.js','/futbol-languages.js':'futbol-languages.js','/fantasy.js':'fantasy.js'};
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8'};
 http.createServer(async(req,res)=>{
  const pathname=new URL(req.url,'http://localhost').pathname;

@@ -5,7 +5,7 @@
  let session=null, current=null, config=null, profiles=[];
  try{session=JSON.parse(sessionStorage.getItem('fanyou-session')||'null');}catch{}
  function message(value){status.textContent=value;}
- function storeSession(data){session=data;try{if(data)sessionStorage.setItem('fanyou-session',JSON.stringify(data));else sessionStorage.removeItem('fanyou-session');}catch{}}
+ function storeSession(data){session=data;try{if(data)sessionStorage.setItem('fanyou-session',JSON.stringify(data));else sessionStorage.removeItem('fanyou-session');}catch{}document.dispatchEvent(new window.Event('fanyou-session-changed'));}
  async function api(route,body,requireAuth=true,retry=true){
   const response=await fetch(`/api/${route}`,{method:body?'POST':'GET',headers:{...(body?{'Content-Type':'application/json'}:{}),...(requireAuth&&session?.access_token?{Authorization:`Bearer ${session.access_token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
   const data=await response.json().catch(()=>({error:'The account service is not available yet.'}));
