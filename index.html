@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 antialiased">
 <header class="border-b border-slate-800 bg-slate-950">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3"><a href="#" class="text-2xl font-extrabold text-emerald-300">Fanyou</a><a href="#fan-community" class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Sign in / Create profile</a></div>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-wrap items-center justify-between gap-3"><a href="#" class="text-2xl font-extrabold text-emerald-300">Fanyou</a><div class="flex flex-wrap gap-2"><a href="#fantasy-leagues" class="rounded-lg border border-emerald-500 px-4 py-2 font-semibold">Fantasy Leagues · 13+</a><a href="#fan-community" class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Sign in / Create profile</a></div></div>
 <nav aria-label="Sports" class="max-w-7xl mx-auto px-4 sm:px-6 pb-5 flex flex-wrap gap-2"><button type="button" data-sport-nav="Football" aria-controls="sport-team-picker" aria-expanded="false" class="sport-nav rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 font-semibold hover:border-emerald-400">Football</button>
 <button type="button" data-sport-nav="Baseball" aria-controls="sport-team-picker" aria-expanded="false" class="sport-nav rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 font-semibold hover:border-emerald-400">Baseball</button>
 <button type="button" data-sport-nav="Basketball" aria-controls="sport-team-picker" aria-expanded="false" class="sport-nav rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 font-semibold hover:border-emerald-400">Basketball</button>
@@ -114,6 +114,55 @@
                 </details>
             </section>
 
+
+<section id="fantasy-leagues" aria-labelledby="fantasy-heading" class="bg-slate-900 border border-emerald-700 rounded-2xl p-4 sm:p-6 space-y-4">
+ <div class="flex flex-wrap justify-between items-center gap-2"><h2 id="fantasy-heading" class="text-2xl font-bold">Fantasy Leagues · Ages 13+</h2><span class="rounded-full bg-emerald-950 text-emerald-200 px-3 py-1 text-sm">Free to play · No wagers or prizes</span></div>
+ <p class="text-slate-300">Create a private league, invite your friends, pick your roster and follow the standings. Football, Baseball, Basketball, Hockey and Futbol/Football.</p>
+ <p class="text-sm text-slate-400">Commissioners enter player lists and statistics; there is no automatic live sports feed. Rosters use first-come picks, lock when play starts, and score under fixed FanYou rules. Fantasy points are for league standings only and cannot be redeemed for money, tickets or rewards.</p>
+ <p id="fantasy-status" role="status" aria-live="polite" class="text-sm text-emerald-200">Checking league availability…</p>
+ <form id="fantasy-age-form" hidden class="rounded-xl bg-slate-950 p-4 space-y-3">
+  <h3 class="font-bold">Check age eligibility</h3>
+  <label class="block text-sm">Date of birth<input name="date_of_birth" type="date" required min="1900-01-01" class="block mt-1 rounded-lg bg-slate-900 border border-slate-700 p-2"></label>
+  <p class="text-xs text-slate-400">Your date of birth is used to check eligibility and is not saved. Only an age band and acceptance date are stored privately. This is a self-declared age check, not identity verification. Under 13? Do not sign up for fantasy leagues or submit personal details.</p>
+  <label class="flex gap-2 text-sm"><input name="accept_rules" type="checkbox" required> I accept the free fantasy rules: no entry fees, wagers, prizes, personal contact details or harassment. Use a team nickname. Users under 18 should review participation with a parent or guardian.</label>
+  <button class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold">Continue</button>
+ </form>
+ <div id="fantasy-account" hidden class="space-y-4">
+  <div class="grid md:grid-cols-2 gap-4">
+   <form id="fantasy-create-form" class="rounded-xl bg-slate-950 p-4 space-y-3">
+    <h3 class="font-bold">Create a private league</h3>
+    <label class="block text-sm">League name<input name="name" required minlength="3" maxlength="60" class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label>
+    <label class="block text-sm">Your team nickname<input name="team_name" required minlength="2" maxlength="40" class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label>
+    <label class="block text-sm">Sport<select name="sport" class="mt-1 w-full rounded-lg bg-slate-900 p-2"><option>Football</option><option>Baseball</option><option>Basketball</option><option>Hockey</option><option>Futbol/Football</option></select></label>
+    <div class="flex gap-3"><label class="text-sm">Maximum teams<input name="capacity" type="number" min="2" max="20" value="8" required class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label><label class="text-sm">Players per roster<input name="roster_size" type="number" min="1" max="10" value="5" required class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label></div>
+    <button class="rounded-lg bg-emerald-600 px-4 py-2">Create free league</button>
+   </form>
+   <form id="fantasy-join-form" class="rounded-xl bg-slate-950 p-4 space-y-3">
+    <h3 class="font-bold">Join with an invite</h3>
+    <label class="block text-sm">Private invite code<input name="invite_code" required maxlength="36" class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label>
+    <label class="block text-sm">Your team nickname<input name="team_name" required minlength="2" maxlength="40" class="mt-1 w-full rounded-lg bg-slate-900 p-2"></label>
+    <button class="rounded-lg bg-indigo-600 px-4 py-2">Join free league</button>
+    <p class="text-xs text-slate-400">Only join invitations from people you know. League details and team nicknames are visible to members. Keep invite codes private. No public chat or private messaging is included.</p>
+   </form>
+  </div>
+  <div class="flex items-center justify-between"><h3 class="font-bold">Your leagues</h3><button id="fantasy-refresh" type="button" class="rounded-lg bg-slate-700 px-3 py-2">Refresh</button></div>
+  <div id="fantasy-list" class="flex flex-wrap gap-2"></div>
+  <div id="fantasy-detail" hidden class="rounded-xl border border-slate-700 p-4 space-y-4">
+   <h3 id="fantasy-league-title" class="text-xl font-bold"></h3><p id="fantasy-league-info" class="text-sm text-slate-300"></p>
+   <div id="fantasy-standings" class="overflow-x-auto"></div>
+   <h4 class="font-bold">Player pool and rosters</h4><div id="fantasy-athletes" class="grid sm:grid-cols-2 gap-2"></div>
+   <div id="fantasy-owner" hidden class="border-t border-slate-700 pt-4 space-y-4">
+    <p id="fantasy-invite" class="text-sm break-all text-amber-200"></p>
+    <form id="fantasy-athlete-form" class="space-y-2"><h4 class="font-bold">Add a professional player to the pool</h4><p class="text-xs text-slate-400">Enter only public professional athlete information. Do not enter schoolchildren or private contact details. These are commissioner-supplied listings, not verified FanYou profiles or endorsements.</p><label class="block text-sm">Player name<input name="name" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-950 rounded-lg p-2"></label><label class="block text-sm">Professional team<input name="team" required minlength="2" maxlength="80" class="mt-1 w-full bg-slate-950 rounded-lg p-2"></label><label class="block text-sm">Position<input name="position" required maxlength="40" class="mt-1 w-full bg-slate-950 rounded-lg p-2"></label><button class="rounded-lg bg-slate-700 px-3 py-2">Add player</button></form>
+    <button id="fantasy-start" type="button" class="rounded-lg bg-emerald-600 px-3 py-2">Lock complete rosters and start</button>
+    <form id="fantasy-score-form" class="space-y-2"><h4 class="font-bold">Publish period statistics</h4><p class="text-xs text-slate-400">Paste output from the Python scoring tool. The server recalculates scores. Reimporting the same player and period corrects that score rather than adding it twice. Commissioners are responsible for accurate stats. Only active leagues accept scores.</p><label class="block text-sm">Scoring JSON<textarea name="payload" rows="6" required maxlength="28000" class="mt-1 w-full bg-slate-950 rounded-lg p-2 font-mono"></textarea></label><button class="rounded-lg bg-indigo-600 px-3 py-2">Publish stats</button></form>
+    <button id="fantasy-close" type="button" class="rounded-lg border border-slate-600 px-3 py-2">Close league permanently</button>
+   </div>
+   <details><summary class="cursor-pointer text-sm font-bold">Scoring rules</summary><pre id="fantasy-rules" class="mt-2 whitespace-pre-wrap text-xs text-slate-300"></pre></details>
+  </div>
+ </div>
+</section>
+
             <section id="fan-community" aria-labelledby="suggestion-heading" class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 space-y-5">
                 <div><h2 id="suggestion-heading" class="text-2xl font-bold">Fan Suggestion Box</h2><p class="text-slate-400 mt-2 text-sm">Share constructive ideas with Players, Coaches, and Managers. Build a better team together.</p></div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -211,5 +260,5 @@
 
 </main>
 <footer class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-sm text-slate-400 border-t border-slate-800">Fanyou · Interact, earn points and rewards. Tickets may be available under participating offers. Conditions apply.</footer>
-<script src="teams.js" defer></script><script src="community.js" defer></script><script src="futbol-languages.js" defer></script>
+<script src="fantasy.js" defer></script><script src="teams.js" defer></script><script src="community.js" defer></script><script src="futbol-languages.js" defer></script>
 </body></html>
